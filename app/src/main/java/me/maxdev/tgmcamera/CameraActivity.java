@@ -61,7 +61,7 @@ public class CameraActivity extends AppCompatActivity implements
             // TODO: show error dialog
         } else {
             cameraPreview = new CameraPreview(this, camera);
-            //cameraPreview.updateCameraParams(camera);
+
             previewLayout.addView(cameraPreview);
         }
     }
@@ -114,4 +114,5 @@ public class CameraActivity extends AppCompatActivity implements
     public void onError() {
         // TODO
     }
+
 }
