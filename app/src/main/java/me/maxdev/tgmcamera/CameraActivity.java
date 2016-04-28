@@ -1,9 +1,11 @@
 package me.maxdev.tgmcamera;
 
+import android.content.Context;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -24,6 +26,7 @@ public class CameraActivity extends AppCompatActivity implements
     private Camera camera;
     private CameraPreview cameraPreview;
     private boolean readyForCapture = false;
+    private OrientationChangedListener orientationChangedListener;
 
     private Runnable systemUiHider = new Runnable() {
         @Override
@@ -41,6 +44,7 @@ public class CameraActivity extends AppCompatActivity implements
         ButterKnife.bind(this);
         rootLayout.setOnSystemUiVisibilityChangeListener(this);
         hideSystemUi();
+        orientationChangedListener = new OrientationChangedListener(this);
     }
 
     @Override
@@ -49,6 +53,7 @@ public class CameraActivity extends AppCompatActivity implements
         initCameraPreview();
         readyForCapture = true;
         hideSystemUi();
+        orientationChangedListener.enable();
     }
 
     @Override
@@ -56,7 +61,9 @@ public class CameraActivity extends AppCompatActivity implements
         super.onPause();
         // TODO releaseMediaRecorder();
         releaseCamera();
+        orientationChangedListener.disable();
     }
+
 
     private void initCameraPreview() {
         camera = getCameraInstance();
@@ -130,5 +137,31 @@ public class CameraActivity extends AppCompatActivity implements
     public void onError() {
         // TODO
         readyForCapture = true;
+    }
+
+    class OrientationChangedListener extends OrientationEventListener {
+
+        OrientationChangedListener(Context context) {
+            super(context);
+        }
+
+        @Override
+        public void onOrientationChanged(int orientation) {
+            if (orientation == ORIENTATION_UNKNOWN) {
+                return;
+            }
+
+            if (orientation >= 0 && orientation < 45 || orientation >= 315 && orientation <= 360) {
+                Log.e("ooo", orientation + " Vertical up");
+            } else if (orientation >= 45 && orientation < 135) {
+                Log.e("ooo", orientation + " Horizontal right");
+            } else if (orientation >= 135 && orientation < 225) {
+                Log.e("ooo", orientation + " Vertical down");
+            } else if (orientation >= 225 && orientation < 315) {
+                Log.e("ooo", orientation + " Horizontal left");
+            } else {
+                Log.e("ooo", orientation + " WRONG ORIENTATION");
+            }
+        }
     }
 }
