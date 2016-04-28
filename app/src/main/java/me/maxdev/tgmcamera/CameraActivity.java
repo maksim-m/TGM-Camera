@@ -9,14 +9,16 @@ import android.widget.FrameLayout;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
-public class CameraActivity extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener {
+public class CameraActivity extends AppCompatActivity implements
+        View.OnSystemUiVisibilityChangeListener, OnCaptureFinishedListener {
 
     private static final String LOG_TAG = "CameraActivity";
 
-    @BindView(R.id.root_layout)
+    @BindView(R.id.layout_root)
     FrameLayout rootLayout;
-    @BindView(R.id.preview_layout)
+    @BindView(R.id.layout_preview)
     FrameLayout previewLayout;
 
     private Camera camera;
@@ -82,6 +84,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnSystemUi
         decorView.setSystemUiVisibility(uiOptions);
     }
 
+    @OnClick(R.id.button_take_picture)
+    void onTakePictureClocked() {
+        camera.takePicture(null, null, new PictureCallback(this, this));
+    }
 
     @Override
     public void onSystemUiVisibilityChange(int visibility) {
@@ -99,4 +105,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnSystemUi
         return camera;
     }
 
+    @Override
+    public void onSuccess() {
+        camera.startPreview();
+    }
+
+    @Override
+    public void onError() {
+        // TODO
+    }
 }
