@@ -23,6 +23,7 @@ public class CameraActivity extends AppCompatActivity implements
 
     private Camera camera;
     private CameraPreview cameraPreview;
+    private boolean readyForCapture = false;
 
     private Runnable systemUiHider = new Runnable() {
         @Override
@@ -46,6 +47,7 @@ public class CameraActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         initCameraPreview();
+        readyForCapture = true;
         hideSystemUi();
     }
 
@@ -87,14 +89,19 @@ public class CameraActivity extends AppCompatActivity implements
 
     @OnClick(R.id.button_take_picture)
     void onTakePictureClicked() {
-        final PictureCallback pictureCallback = new PictureCallback(this, this);
-        camera.autoFocus(new Camera.AutoFocusCallback() {
-            @Override
-            public void onAutoFocus(boolean success, Camera camera) {
-                Log.e("xxx", "onAutoFocus");
-                camera.takePicture(null, null, pictureCallback);
-            }
-        });
+        if (readyForCapture) {
+            final PictureCallback pictureCallback = new PictureCallback(this, this);
+            camera.autoFocus(new Camera.AutoFocusCallback() {
+                @Override
+                public void onAutoFocus(boolean success, Camera camera) {
+                    Log.e("xxx", "onAutoFocus");
+                    camera.takePicture(null, null, pictureCallback);
+                    readyForCapture = false;
+                }
+            });
+        } else {
+            Log.w(LOG_TAG, "Camera not ready yet.");
+        }
     }
 
     @Override
@@ -116,10 +123,12 @@ public class CameraActivity extends AppCompatActivity implements
     @Override
     public void onSuccess() {
         camera.startPreview();
+        readyForCapture = true;
     }
 
     @Override
     public void onError() {
         // TODO
+        readyForCapture = true;
     }
 }

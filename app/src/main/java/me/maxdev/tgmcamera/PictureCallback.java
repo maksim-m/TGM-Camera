@@ -36,7 +36,12 @@ public class PictureCallback implements Camera.PictureCallback {
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
         File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-        //File pictureFile = new File(context.getFilesDir(), "test.jpg");
+        if (pictureFile == null) {
+            Log.e(LOG_TAG, "Can not create output file.");
+            // TODO
+            listener.onError();
+            return;
+        }
 
         try {
             FileOutputStream fos = new FileOutputStream(pictureFile);
