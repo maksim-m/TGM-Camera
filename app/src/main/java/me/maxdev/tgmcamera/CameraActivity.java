@@ -28,7 +28,7 @@ public class CameraActivity extends AppCompatActivity implements
         @Override
         public void run() {
             Log.d(LOG_TAG, "Start systemUiHider.");
-            hideStatusUi();
+            hideSystemUi();
         }
     };
 
@@ -39,13 +39,14 @@ public class CameraActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_camera);
         ButterKnife.bind(this);
         rootLayout.setOnSystemUiVisibilityChangeListener(this);
-        hideStatusUi();
+        hideSystemUi();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         initCameraPreview();
+        hideSystemUi();
     }
 
     @Override
@@ -75,7 +76,7 @@ public class CameraActivity extends AppCompatActivity implements
 
     }
 
-    private void hideStatusUi() {
+    private void hideSystemUi() {
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(0); // reset all flags
         int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN |
@@ -85,8 +86,15 @@ public class CameraActivity extends AppCompatActivity implements
     }
 
     @OnClick(R.id.button_take_picture)
-    void onTakePictureClocked() {
-        camera.takePicture(null, null, new PictureCallback(this, this));
+    void onTakePictureClicked() {
+        final PictureCallback pictureCallback = new PictureCallback(this, this);
+        camera.autoFocus(new Camera.AutoFocusCallback() {
+            @Override
+            public void onAutoFocus(boolean success, Camera camera) {
+                Log.e("xxx", "onAutoFocus");
+                camera.takePicture(null, null, pictureCallback);
+            }
+        });
     }
 
     @Override
@@ -114,5 +122,4 @@ public class CameraActivity extends AppCompatActivity implements
     public void onError() {
         // TODO
     }
-
 }
