@@ -7,8 +7,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -40,6 +38,11 @@ public class CameraActivity extends AppCompatActivity implements View.OnSystemUi
         ButterKnife.bind(this);
         rootLayout.setOnSystemUiVisibilityChangeListener(this);
         hideStatusUi();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         initCameraPreview();
     }
 
@@ -64,6 +67,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnSystemUi
     private void releaseCamera() {
         if (camera != null) {
             camera.release();
+            cameraPreview.getHolder().removeCallback(cameraPreview);
             camera = null;
         }
 
