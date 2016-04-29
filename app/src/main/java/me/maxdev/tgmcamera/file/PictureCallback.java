@@ -1,4 +1,4 @@
-package me.maxdev.tgmcamera;
+package me.maxdev.tgmcamera.file;
 
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import me.maxdev.tgmcamera.util.OnCaptureFinishedListener;
+import me.maxdev.tgmcamera.R;
 
 /**
  * Created by Max on 28.04.2016.

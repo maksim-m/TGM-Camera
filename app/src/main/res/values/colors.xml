@@ -3,4 +3,10 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="colorToolbar">#25272a</color>
+    <color name="colorToolbarTransparent">#99000000</color>
+
+    <color name="shutterButtonInnerCircleColor">#50a8f5</color>
+    <color name="shutterButtonOuterCircleColor">#3d96e3</color>
+    <color name="shutterButtonCornerColor">#ffffff</color>
 </resources>

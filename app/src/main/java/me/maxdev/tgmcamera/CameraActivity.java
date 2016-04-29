@@ -12,6 +12,8 @@ import android.widget.FrameLayout;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import me.maxdev.tgmcamera.file.PictureCallback;
+import me.maxdev.tgmcamera.util.OnCaptureFinishedListener;
 
 public class CameraActivity extends AppCompatActivity implements
         View.OnSystemUiVisibilityChangeListener, OnCaptureFinishedListener {

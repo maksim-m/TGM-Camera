@@ -1,4 +1,4 @@
-package me.maxdev.tgmcamera;
+package me.maxdev.tgmcamera.util;
 
 /**
  * Created by Max on 28.04.2016.
