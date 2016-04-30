@@ -14,9 +14,6 @@ import java.util.List;
  */
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
-    public static final int MEASUREMENT_WIDTH = 0;
-    public static final int MEASUREMENT_HEIGHT = 1;
-
     private static final String LOG_TAG = "CameraPreview";
     private static final float DEFAULT_ASPECT_RATIO = 4f / 3f;
 
@@ -24,10 +21,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private SurfaceHolder surfaceHolder;
     private List<Camera.Size> supportedPreviewSizes;
     private Camera.Size previewSize;
-
     private float aspectRatio;
-    private boolean aspectRatioEnabled;
-    private int dominantMeasurement;
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
@@ -43,9 +37,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void setAspectRatio(float aspectRatio) {
         Log.e("xxx", "new aspect ratio = " + aspectRatio);
         this.aspectRatio = aspectRatio;
-
         requestLayout();
-
     }
 
     @Override

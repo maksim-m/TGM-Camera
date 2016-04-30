@@ -41,7 +41,7 @@ public class CameraActivity extends AppCompatActivity implements
     private boolean readyForCapture = false;
     private OrientationChangeListener orientationChangeListener;
 
-    private int shortAnimationDuration = 300;
+    private int shortAnimationDuration = 400;
     private int toolbarHeight;
 
     private Runnable systemUiHider = new Runnable() {
@@ -66,7 +66,7 @@ public class CameraActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        initCameraPreview();
+        initCameraPreview(currentMode);
         readyForCapture = true;
         hideSystemUi();
         orientationChangeListener.enable();
@@ -91,16 +91,15 @@ public class CameraActivity extends AppCompatActivity implements
     }
 
 
-    private void initCameraPreview() {
+    private void initCameraPreview(int newMode) {
         camera = getCameraInstance();
         if (camera == null) {
             // TODO: show error dialog
         } else {
             cameraPreview = new CameraPreview(this, camera);
-            float aspectRatio = currentMode == MODE_PHOTO ? 4f / 3f : 16f / 9f;
+            float aspectRatio = newMode == MODE_PHOTO ? 4f / 3f : 16f / 9f;
             cameraPreview.setAspectRatio(aspectRatio);
             previewLayout.addView(cameraPreview);
-
         }
     }
 
@@ -145,28 +144,21 @@ public class CameraActivity extends AppCompatActivity implements
     }
 
     private void changeCurrentMode() {
-        int newMode = currentMode == MODE_PHOTO ? MODE_VIDEO : MODE_PHOTO;
-
-
-        releaseCamera();
-        resetCameraPreviews();
+        final int newMode = currentMode == MODE_PHOTO ? MODE_VIDEO : MODE_PHOTO;
+        final float aspectRatio = newMode == MODE_PHOTO ? 4f / 3f : 16f / 9f;
 
         // update toolbar
         if (newMode == MODE_VIDEO) {
 
-            blockingToolbar.animate()
-                    .alpha(0f)
-                    .setDuration(shortAnimationDuration)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            blockingToolbar.setVisibility(View.GONE);
-                            initCameraPreview();
-                        }
-                    });
-
+            toolbar.setBackgroundColor(getResources().getColor(R.color.colorToolbar));
+            //releaseCamera();
+            blockingToolbar.setVisibility(View.GONE);
+            cameraPreview.setAspectRatio(aspectRatio);
+            //resetCameraPreviews();
+            //initCameraPreview(newMode);
+            //toolbar.setBackgroundColor(getResources().getColor(R.color.colorToolbarTransparent));
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
-                    getResources().getColor(R.color.colorTransparent),
+                    getResources().getColor(R.color.colorToolbar),
                     getResources().getColor(R.color.colorToolbarTransparent));
             colorAnimation.setDuration(shortAnimationDuration); // milliseconds
             colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -177,24 +169,14 @@ public class CameraActivity extends AppCompatActivity implements
             });
             colorAnimation.start();
 
-
         } else if (newMode == MODE_PHOTO) {
-
+            //releaseCamera();
+            //resetCameraPreviews();
             blockingToolbar.setAlpha(0f);
             blockingToolbar.setVisibility(View.VISIBLE);
-            blockingToolbar.animate()
-                    .alpha(1f)
-                    .setDuration(shortAnimationDuration)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            initCameraPreview();
-                        }
-                    });
-
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
                     getResources().getColor(R.color.colorToolbarTransparent),
-                    getResources().getColor(R.color.colorTransparent));
+                    getResources().getColor(R.color.colorToolbar));
             colorAnimation.setDuration(shortAnimationDuration); // milliseconds
             colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
@@ -202,18 +184,23 @@ public class CameraActivity extends AppCompatActivity implements
                     toolbar.setBackgroundColor((int) animator.getAnimatedValue());
                 }
             });
+            colorAnimation.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    cameraPreview.setAspectRatio(aspectRatio);
+                    blockingToolbar.setAlpha(1f);
+                    toolbar.setBackgroundColor(getResources().getColor(R.color.colorTransparent));
+                }
+            });
             colorAnimation.start();
-
         }
-
 
         currentMode = newMode;
     }
 
 
     private void resetCameraPreviews() {
-        previewLayout.removeAllViews();
-        //previewLayoutVideo.removeAllViews();
+        previewLayout.removeView(cameraPreview);
     }
 
     @Override
@@ -224,7 +211,7 @@ public class CameraActivity extends AppCompatActivity implements
     public static Camera getCameraInstance() {
         Camera camera = null;
         try {
-            camera = Camera.open(); // attempt to get a Camera instance
+            camera = Camera.open();
         } catch (Exception e) {
             // Camera is not available (in use or does not exist)
             // TODO
