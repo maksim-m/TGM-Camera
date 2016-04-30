@@ -1,11 +1,16 @@
 package me.maxdev.tgmcamera;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -18,16 +23,26 @@ public class CameraActivity extends AppCompatActivity implements
         View.OnSystemUiVisibilityChangeListener, OnCaptureFinishedListener {
 
     private static final String LOG_TAG = "CameraActivity";
+    private static final int MODE_PHOTO = 0;
+    private static final int MODE_VIDEO = 1;
 
     @BindView(R.id.layout_root)
     FrameLayout rootLayout;
     @BindView(R.id.layout_preview)
     FrameLayout previewLayout;
+    @BindView(R.id.blocking_toolbar)
+    View blockingToolbar;
+    @BindView(R.id.toolbar)
+    RelativeLayout toolbar;
 
+    private int currentMode = MODE_PHOTO;
     private Camera camera;
     private CameraPreview cameraPreview;
     private boolean readyForCapture = false;
     private OrientationChangeListener orientationChangeListener;
+
+    private int shortAnimationDuration = 300;
+    private int toolbarHeight;
 
     private Runnable systemUiHider = new Runnable() {
         @Override
@@ -58,6 +73,16 @@ public class CameraActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (blockingToolbar.getVisibility() != View.GONE) {
+            toolbarHeight = blockingToolbar.getMeasuredWidth();
+        }
+        toolbar.setMinimumWidth(toolbarHeight);
+        toolbar.requestLayout();
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         // TODO releaseMediaRecorder();
@@ -72,8 +97,10 @@ public class CameraActivity extends AppCompatActivity implements
             // TODO: show error dialog
         } else {
             cameraPreview = new CameraPreview(this, camera);
-
+            float aspectRatio = currentMode == MODE_PHOTO ? 4f / 3f : 16f / 9f;
+            cameraPreview.setAspectRatio(aspectRatio);
             previewLayout.addView(cameraPreview);
+
         }
     }
 
@@ -90,7 +117,7 @@ public class CameraActivity extends AppCompatActivity implements
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(0); // reset all flags
         int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN |
-                View.SYSTEM_UI_FLAG_LOW_PROFILE |
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
         decorView.setSystemUiVisibility(uiOptions);
     }
@@ -110,6 +137,83 @@ public class CameraActivity extends AppCompatActivity implements
         } else {
             Log.w(LOG_TAG, "Camera not ready yet.");
         }
+    }
+
+    @OnClick(R.id.button_ok)
+    void onOkButtonClicked() {
+        changeCurrentMode();
+    }
+
+    private void changeCurrentMode() {
+        int newMode = currentMode == MODE_PHOTO ? MODE_VIDEO : MODE_PHOTO;
+
+
+        releaseCamera();
+        resetCameraPreviews();
+
+        // update toolbar
+        if (newMode == MODE_VIDEO) {
+
+            blockingToolbar.animate()
+                    .alpha(0f)
+                    .setDuration(shortAnimationDuration)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            blockingToolbar.setVisibility(View.GONE);
+                            initCameraPreview();
+                        }
+                    });
+
+            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                    getResources().getColor(R.color.colorTransparent),
+                    getResources().getColor(R.color.colorToolbarTransparent));
+            colorAnimation.setDuration(shortAnimationDuration); // milliseconds
+            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animator) {
+                    toolbar.setBackgroundColor((int) animator.getAnimatedValue());
+                }
+            });
+            colorAnimation.start();
+
+
+        } else if (newMode == MODE_PHOTO) {
+
+            blockingToolbar.setAlpha(0f);
+            blockingToolbar.setVisibility(View.VISIBLE);
+            blockingToolbar.animate()
+                    .alpha(1f)
+                    .setDuration(shortAnimationDuration)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            initCameraPreview();
+                        }
+                    });
+
+            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                    getResources().getColor(R.color.colorToolbarTransparent),
+                    getResources().getColor(R.color.colorTransparent));
+            colorAnimation.setDuration(shortAnimationDuration); // milliseconds
+            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animator) {
+                    toolbar.setBackgroundColor((int) animator.getAnimatedValue());
+                }
+            });
+            colorAnimation.start();
+
+        }
+
+
+        currentMode = newMode;
+    }
+
+
+    private void resetCameraPreviews() {
+        previewLayout.removeAllViews();
+        //previewLayoutVideo.removeAllViews();
     }
 
     @Override

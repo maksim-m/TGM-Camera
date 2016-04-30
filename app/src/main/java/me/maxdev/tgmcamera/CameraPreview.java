@@ -14,11 +14,20 @@ import java.util.List;
  */
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
+    public static final int MEASUREMENT_WIDTH = 0;
+    public static final int MEASUREMENT_HEIGHT = 1;
+
     private static final String LOG_TAG = "CameraPreview";
+    private static final float DEFAULT_ASPECT_RATIO = 4f / 3f;
+
     private Camera camera;
     private SurfaceHolder surfaceHolder;
     private List<Camera.Size> supportedPreviewSizes;
     private Camera.Size previewSize;
+
+    private float aspectRatio;
+    private boolean aspectRatioEnabled;
+    private int dominantMeasurement;
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
@@ -28,6 +37,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         if (camera != null) {
             supportedPreviewSizes = camera.getParameters().getSupportedPreviewSizes();
         }
+        aspectRatio = DEFAULT_ASPECT_RATIO;
+    }
+
+    public void setAspectRatio(float aspectRatio) {
+        Log.e("xxx", "new aspect ratio = " + aspectRatio);
+        this.aspectRatio = aspectRatio;
+
+        requestLayout();
+
     }
 
     @Override
@@ -74,6 +92,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             camera.setParameters(parameters);
         }
 
+        Log.e("xxx", "surfaceChanged: width=" + width + " height=" + height);
+
         // start preview with new settings
         try {
             camera.setPreviewDisplay(surfaceHolder);
@@ -96,13 +116,18 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
-        final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
+        /*final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+        final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);/*/
+
+        int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
+        int width = (int) (height * aspectRatio);
+
         setMeasuredDimension(width, height);
 
         if (supportedPreviewSizes != null) {
             previewSize = getOptimalPreviewSize(supportedPreviewSizes, width, height);
         }
+        Log.e("xxx", "onMeasure: width=" + width + " height=" + height);
     }
 
     public void updateCameraParams(Camera camera) {
@@ -114,23 +139,21 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
-        final double ASPECT_TOLERANCE = 0.1;
-        double targetRatio = (double) h / w;
+        final double ASPECT_TOLERANCE = 0.05;
+        double targetRatio = (double) w / h;
 
-        if (sizes == null) {
-            return null;
-        }
+        if (sizes == null) return null;
 
         Camera.Size optimalSize = null;
+
         double minDiff = Double.MAX_VALUE;
 
         int targetHeight = h;
 
+        // Find size
         for (Camera.Size size : sizes) {
             double ratio = (double) size.width / size.height;
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) {
-                continue;
-            }
+            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
             if (Math.abs(size.height - targetHeight) < minDiff) {
                 optimalSize = size;
                 minDiff = Math.abs(size.height - targetHeight);
