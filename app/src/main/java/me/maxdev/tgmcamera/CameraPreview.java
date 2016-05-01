@@ -79,7 +79,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             Camera.Parameters parameters = camera.getParameters();
             parameters.setPreviewSize(previewSize.width, previewSize.height);
             requestLayout();
-            Camera.Size maximalPictureSize = getMaximalPictureSize(parameters);
+            Camera.Size maximalPictureSize = getMaximalPictureSizeWithSameAspectRatio(parameters);
             parameters.setPictureSize(maximalPictureSize.width, maximalPictureSize.height);
             camera.setParameters(parameters);
         }
@@ -134,18 +134,20 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         final double ASPECT_TOLERANCE = 0.05;
         double targetRatio = (double) w / h;
 
-        if (sizes == null) return null;
-
+        if (sizes == null) {
+            return null;
+        }
         Camera.Size optimalSize = null;
 
         double minDiff = Double.MAX_VALUE;
-
         int targetHeight = h;
 
         // Find size
         for (Camera.Size size : sizes) {
             double ratio = (double) size.width / size.height;
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
+            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) {
+                continue;
+            }
             if (Math.abs(size.height - targetHeight) < minDiff) {
                 optimalSize = size;
                 minDiff = Math.abs(size.height - targetHeight);
@@ -164,14 +166,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         return optimalSize;
     }
 
-    private Camera.Size getMaximalPictureSize(Camera.Parameters parameters) {
+    private Camera.Size getMaximalPictureSizeWithSameAspectRatio(Camera.Parameters parameters) {
         List<Camera.Size> supportedPictureSizes = parameters.getSupportedPictureSizes();
         Camera.Size pictureSize = supportedPictureSizes.get(0);
         for (Camera.Size size : supportedPictureSizes) {
             Log.e("xxx", size.width + " x " + size.height);
             int resultArea = pictureSize.width * pictureSize.height;
             int newArea = size.width * size.height;
-            if (newArea >= resultArea) {
+            if (newArea >= resultArea &&
+                    (float) size.width / size.height == (float) previewSize.width / previewSize.height) {
                 pictureSize = size;
             }
         }

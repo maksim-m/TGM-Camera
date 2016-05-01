@@ -6,6 +6,7 @@ import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -23,8 +24,11 @@ public class CameraActivity extends AppCompatActivity implements
         View.OnSystemUiVisibilityChangeListener, OnCaptureFinishedListener {
 
     private static final String LOG_TAG = "CameraActivity";
+
     private static final int MODE_PHOTO = 0;
     private static final int MODE_VIDEO = 1;
+
+    private static final int shortAnimationDuration = 400;
 
     @BindView(R.id.layout_root)
     FrameLayout rootLayout;
@@ -40,8 +44,6 @@ public class CameraActivity extends AppCompatActivity implements
     private CameraPreview cameraPreview;
     private boolean readyForCapture = false;
     private OrientationChangeListener orientationChangeListener;
-
-    private int shortAnimationDuration = 400;
     private int toolbarHeight;
 
     private Runnable systemUiHider = new Runnable() {
@@ -124,15 +126,19 @@ public class CameraActivity extends AppCompatActivity implements
     @OnClick(R.id.button_take_picture)
     void onTakePictureClicked() {
         if (readyForCapture) {
-            final PictureCallback pictureCallback = new PictureCallback(this, this);
-            camera.autoFocus(new Camera.AutoFocusCallback() {
-                @Override
-                public void onAutoFocus(boolean success, Camera camera) {
-                    Log.e("xxx", "onAutoFocus");
-                    camera.takePicture(null, null, pictureCallback);
-                    readyForCapture = false;
-                }
-            });
+            if (currentMode == MODE_PHOTO) {
+                final PictureCallback pictureCallback = new PictureCallback(this, this);
+                camera.autoFocus(new Camera.AutoFocusCallback() {
+                    @Override
+                    public void onAutoFocus(boolean success, Camera camera) {
+                        Log.e("xxx", "onAutoFocus");
+                        camera.takePicture(null, null, pictureCallback);
+                        readyForCapture = false;
+                    }
+                });
+            } else if (currentMode == MODE_VIDEO) {
+                // TODO
+            }
         } else {
             Log.w(LOG_TAG, "Camera not ready yet.");
         }
@@ -157,17 +163,23 @@ public class CameraActivity extends AppCompatActivity implements
             //resetCameraPreviews();
             //initCameraPreview(newMode);
             //toolbar.setBackgroundColor(getResources().getColor(R.color.colorToolbarTransparent));
-            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
-                    getResources().getColor(R.color.colorToolbar),
-                    getResources().getColor(R.color.colorToolbarTransparent));
-            colorAnimation.setDuration(shortAnimationDuration); // milliseconds
-            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
                 @Override
-                public void onAnimationUpdate(ValueAnimator animator) {
-                    toolbar.setBackgroundColor((int) animator.getAnimatedValue());
+                public void run() {
+                    ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                            getResources().getColor(R.color.colorToolbar),
+                            getResources().getColor(R.color.colorToolbarTransparent));
+                    colorAnimation.setDuration(shortAnimationDuration); // milliseconds
+                    colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator animator) {
+                            toolbar.setBackgroundColor((int) animator.getAnimatedValue());
+                        }
+                    });
+                    colorAnimation.start();
                 }
-            });
-            colorAnimation.start();
+            }, 300);
 
         } else if (newMode == MODE_PHOTO) {
             //releaseCamera();
