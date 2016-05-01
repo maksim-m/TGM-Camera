@@ -5,6 +5,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.hardware.Camera;
+import android.media.CamcorderProfile;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -13,9 +15,12 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
+import java.io.IOException;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import me.maxdev.tgmcamera.file.OutputFileHelper;
 import me.maxdev.tgmcamera.file.PictureCallback;
 import me.maxdev.tgmcamera.util.OnCaptureFinishedListener;
 import me.maxdev.tgmcamera.util.OrientationChangeListener;
@@ -39,11 +44,13 @@ public class CameraActivity extends AppCompatActivity implements
     @BindView(R.id.toolbar)
     RelativeLayout toolbar;
 
-    private int currentMode = MODE_PHOTO;
     private Camera camera;
     private CameraPreview cameraPreview;
-    private boolean readyForCapture = false;
+    private MediaRecorder mediaRecorder;
     private OrientationChangeListener orientationChangeListener;
+    private int currentMode = MODE_PHOTO;
+    private boolean readyForCapture = false;
+    private boolean isRecording = false;
     private int toolbarHeight;
 
     private Runnable systemUiHider = new Runnable() {
@@ -104,14 +111,6 @@ public class CameraActivity extends AppCompatActivity implements
         }
     }
 
-    private void releaseCamera() {
-        if (camera != null) {
-            camera.release();
-            cameraPreview.getHolder().removeCallback(cameraPreview);
-            camera = null;
-        }
-    }
-
     private void hideSystemUi() {
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(0); // reset all flags
@@ -135,7 +134,33 @@ public class CameraActivity extends AppCompatActivity implements
                     }
                 });
             } else if (currentMode == MODE_VIDEO) {
-                // TODO
+                if (isRecording) {
+                    // stop recording and release camera
+                    mediaRecorder.stop();  // stop the recording
+                    releaseMediaRecorder(); // release the MediaRecorder object
+                    camera.lock();         // take camera access back from MediaRecorder
+
+                    // TODO inform the user that recording has stopped
+
+                    isRecording = false;
+                } else {
+                    // initialize video camera
+                    if (prepareVideoRecorder()) {
+                        // Camera is available and unlocked, MediaRecorder is prepared,
+                        // now you can start recording
+                        mediaRecorder.start();
+
+                        // TODO inform the user that recording has started
+
+                        isRecording = true;
+                    } else {
+                        Log.e(LOG_TAG, "Failed to prepare MediaRecorder.");
+                        // prepare didn't work, release the camera
+                        releaseMediaRecorder();
+                        // TODO inform user
+                    }
+
+                }
             }
         } else {
             Log.w(LOG_TAG, "Camera not ready yet.");
@@ -227,6 +252,60 @@ public class CameraActivity extends AppCompatActivity implements
             // TODO
         }
         return camera;
+    }
+
+    private boolean prepareVideoRecorder(){
+
+        mediaRecorder = new MediaRecorder();
+
+        // Step 1: Unlock and set camera to MediaRecorder
+        camera.unlock();
+        mediaRecorder.setCamera(camera);
+
+        // Step 2: Set sources
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+
+        // Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
+        mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
+
+        // Step 4: Set output file
+        mediaRecorder.setOutputFile(OutputFileHelper.getOutputMediaFile(this,
+                OutputFileHelper.MEDIA_TYPE_VIDEO).toString());
+
+        // Step 5: Set the preview output
+        mediaRecorder.setPreviewDisplay(cameraPreview.getHolder().getSurface());
+
+        // Step 6: Prepare configured MediaRecorder
+        try {
+            mediaRecorder.prepare();
+        } catch (IllegalStateException e) {
+            Log.d(LOG_TAG, "IllegalStateException preparing MediaRecorder: " + e.getMessage());
+            releaseMediaRecorder();
+            return false;
+        } catch (IOException e) {
+            Log.d(LOG_TAG, "IOException preparing MediaRecorder: " + e.getMessage());
+            releaseMediaRecorder();
+            return false;
+        }
+        return true;
+    }
+
+    private void releaseCamera() {
+        if (camera != null) {
+            camera.release();
+            cameraPreview.getHolder().removeCallback(cameraPreview);
+            camera = null;
+        }
+    }
+
+    private void releaseMediaRecorder(){
+        if (mediaRecorder != null) {
+            mediaRecorder.reset();   // clear recorder configuration
+            mediaRecorder.release(); // release the recorder object
+            mediaRecorder = null;
+            camera.lock();           // lock camera for later use
+        }
     }
 
     @Override

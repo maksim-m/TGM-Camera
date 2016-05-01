@@ -29,16 +29,12 @@ public class OrientationChangeListener extends OrientationEventListener {
 
         int newOrientation = ORIENTATION_NONE;
         if (orientation >= 0 && orientation < 45 || orientation >= 315 && orientation <= 360) {
-            Log.e("ooo", orientation + " Vertical up");
             newOrientation = ORIENTATION_PORTRAIT;
         } else if (orientation >= 45 && orientation < 135) {
-            Log.e("ooo", orientation + " Horizontal right");
             newOrientation = ORIENTATION_LANDSCAPE;
         } else if (orientation >= 135 && orientation < 225) {
-            Log.e("ooo", orientation + " Vertical down");
             newOrientation = ORIENTATION_PORTRAIT_FLIPPED;
         } else if (orientation >= 225 && orientation < 315) {
-            Log.e("ooo", orientation + " Horizontal left");
             newOrientation = ORIENTATION_LANDSCAPE_FLIPPED;
         } else {
             Log.e("ooo", orientation + " WRONG ORIENTATION");
