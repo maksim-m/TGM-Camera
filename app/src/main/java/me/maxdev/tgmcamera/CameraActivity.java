@@ -49,7 +49,7 @@ public class CameraActivity extends AppCompatActivity implements
     private MediaRecorder mediaRecorder;
     private OrientationChangeListener orientationChangeListener;
     private int currentMode = MODE_PHOTO;
-    private boolean readyForCapture = false;
+    private boolean cameraReady = false;
     private boolean isRecording = false;
     private int toolbarHeight;
 
@@ -76,7 +76,7 @@ public class CameraActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         initCameraPreview(currentMode);
-        readyForCapture = true;
+        cameraReady = true;
         hideSystemUi();
         orientationChangeListener.enable();
     }
@@ -94,7 +94,9 @@ public class CameraActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        // TODO releaseMediaRecorder();
+        if (isRecording) {
+            stopVideoRecording();
+        }
         releaseCamera();
         orientationChangeListener.disable();
     }
@@ -122,49 +124,62 @@ public class CameraActivity extends AppCompatActivity implements
 
     @OnClick(R.id.button_take_picture)
     void onTakePictureClicked() {
-        if (readyForCapture) {
+        if (cameraReady) {
             if (currentMode == MODE_PHOTO) {
-                final PictureCallback pictureCallback = new PictureCallback(this, this);
-                camera.autoFocus(new Camera.AutoFocusCallback() {
-                    @Override
-                    public void onAutoFocus(boolean success, Camera camera) {
-                        Log.e("xxx", "onAutoFocus");
-                        camera.takePicture(null, null, pictureCallback);
-                        readyForCapture = false;
-                    }
-                });
+                capturePhoto();
             } else if (currentMode == MODE_VIDEO) {
                 if (isRecording) {
-                    // stop recording and release camera
-                    mediaRecorder.stop();  // stop the recording
-                    releaseMediaRecorder(); // release the MediaRecorder object
-                    camera.lock();         // take camera access back from MediaRecorder
-
-                    // TODO inform the user that recording has stopped
-
-                    isRecording = false;
+                    stopVideoRecording();
                 } else {
-                    // initialize video camera
-                    if (prepareVideoRecorder()) {
-                        // Camera is available and unlocked, MediaRecorder is prepared,
-                        // now you can start recording
-                        mediaRecorder.start();
-
-                        // TODO inform the user that recording has started
-
-                        isRecording = true;
-                    } else {
-                        Log.e(LOG_TAG, "Failed to prepare MediaRecorder.");
-                        // prepare didn't work, release the camera
-                        releaseMediaRecorder();
-                        // TODO inform user
-                    }
-
+                    startVideoRecording();
                 }
             }
         } else {
             Log.w(LOG_TAG, "Camera not ready yet.");
         }
+    }
+
+    private void startVideoRecording() {
+        // initialize video camera
+        if (prepareVideoRecorder()) {
+            // Camera is available and unlocked, MediaRecorder is prepared,
+            // now you can start recording
+            mediaRecorder.start();
+
+            // TODO inform the user that recording has started
+
+            isRecording = true;
+        } else {
+            Log.e(LOG_TAG, "Failed to prepare MediaRecorder.");
+            // prepare didn't work, release the camera
+            releaseMediaRecorder();
+            // TODO inform user
+        }
+    }
+
+    private void stopVideoRecording() {
+        // stop recording and release camera
+        if (mediaRecorder != null) {
+            mediaRecorder.stop();  // stop the recording
+            releaseMediaRecorder(); // release the MediaRecorder object
+            camera.lock();         // take camera access back from MediaRecorder
+        }
+
+        // TODO inform the user that recording has stopped
+
+        isRecording = false;
+    }
+
+    private void capturePhoto() {
+        final PictureCallback pictureCallback = new PictureCallback(this, this);
+        camera.autoFocus(new Camera.AutoFocusCallback() {
+            @Override
+            public void onAutoFocus(boolean success, Camera camera) {
+                Log.e("xxx", "onAutoFocus");
+                camera.takePicture(null, null, pictureCallback);
+                cameraReady = false;
+            }
+        });
     }
 
     @OnClick(R.id.button_ok)
@@ -175,6 +190,10 @@ public class CameraActivity extends AppCompatActivity implements
     private void changeCurrentMode() {
         final int newMode = currentMode == MODE_PHOTO ? MODE_VIDEO : MODE_PHOTO;
         final float aspectRatio = newMode == MODE_PHOTO ? 4f / 3f : 16f / 9f;
+
+        if (isRecording) {
+            stopVideoRecording();
+        }
 
         // update toolbar
         if (newMode == MODE_VIDEO) {
@@ -254,7 +273,7 @@ public class CameraActivity extends AppCompatActivity implements
         return camera;
     }
 
-    private boolean prepareVideoRecorder(){
+    private boolean prepareVideoRecorder() {
 
         mediaRecorder = new MediaRecorder();
 
@@ -299,7 +318,7 @@ public class CameraActivity extends AppCompatActivity implements
         }
     }
 
-    private void releaseMediaRecorder(){
+    private void releaseMediaRecorder() {
         if (mediaRecorder != null) {
             mediaRecorder.reset();   // clear recorder configuration
             mediaRecorder.release(); // release the recorder object
@@ -311,13 +330,13 @@ public class CameraActivity extends AppCompatActivity implements
     @Override
     public void onSuccess() {
         camera.startPreview();
-        readyForCapture = true;
+        cameraReady = true;
     }
 
     @Override
     public void onError() {
         // TODO
-        readyForCapture = true;
+        cameraReady = true;
     }
 
 }

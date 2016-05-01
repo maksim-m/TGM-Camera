@@ -64,11 +64,6 @@ public class PictureCallback implements Camera.PictureCallback {
         addToGallery(pictureFile);
     }
 
-    /**
-     * Create a File for saving an image or video
-     */
-
-
     private void addToGallery(File file) {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         Uri contentUri = Uri.fromFile(file);
