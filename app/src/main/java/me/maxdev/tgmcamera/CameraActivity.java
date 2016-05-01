@@ -98,9 +98,8 @@ public class CameraActivity extends AppCompatActivity implements
         if (camera == null) {
             // TODO: show error dialog
         } else {
-            cameraPreview = new CameraPreview(this, camera);
             float aspectRatio = newMode == MODE_PHOTO ? 4f / 3f : 16f / 9f;
-            cameraPreview.setAspectRatio(aspectRatio);
+            cameraPreview = new CameraPreview(this, camera, aspectRatio);
             previewLayout.addView(cameraPreview);
         }
     }
@@ -111,7 +110,6 @@ public class CameraActivity extends AppCompatActivity implements
             cameraPreview.getHolder().removeCallback(cameraPreview);
             camera = null;
         }
-
     }
 
     private void hideSystemUi() {
