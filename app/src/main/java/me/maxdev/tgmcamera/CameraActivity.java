@@ -9,12 +9,14 @@ import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
+import java.io.File;
 import java.io.IOException;
 
 import butterknife.BindView;
@@ -33,7 +35,7 @@ public class CameraActivity extends AppCompatActivity implements
     private static final int MODE_PHOTO = 0;
     private static final int MODE_VIDEO = 1;
 
-    private static final int shortAnimationDuration = 400;
+    private static final int SHORT_ANIMATION_DURATION = 400;
 
     @BindView(R.id.layout_root)
     FrameLayout rootLayout;
@@ -63,7 +65,7 @@ public class CameraActivity extends AppCompatActivity implements
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         ButterKnife.bind(this);
@@ -75,6 +77,10 @@ public class CameraActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
+        showCameraPreview();
+    }
+
+    private void showCameraPreview() {
         initCameraPreview(currentMode);
         cameraReady = true;
         hideSystemUi();
@@ -212,7 +218,7 @@ public class CameraActivity extends AppCompatActivity implements
                     ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
                             getResources().getColor(R.color.colorToolbar),
                             getResources().getColor(R.color.colorToolbarTransparent));
-                    colorAnimation.setDuration(shortAnimationDuration); // milliseconds
+                    colorAnimation.setDuration(SHORT_ANIMATION_DURATION); // milliseconds
                     colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                         @Override
                         public void onAnimationUpdate(ValueAnimator animator) {
@@ -231,7 +237,7 @@ public class CameraActivity extends AppCompatActivity implements
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
                     getResources().getColor(R.color.colorToolbarTransparent),
                     getResources().getColor(R.color.colorToolbar));
-            colorAnimation.setDuration(shortAnimationDuration); // milliseconds
+            colorAnimation.setDuration(SHORT_ANIMATION_DURATION); // milliseconds
             colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animator) {
@@ -289,8 +295,12 @@ public class CameraActivity extends AppCompatActivity implements
         mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
 
         // Step 4: Set output file
-        mediaRecorder.setOutputFile(OutputFileHelper.getOutputMediaFile(this,
-                OutputFileHelper.MEDIA_TYPE_VIDEO).toString());
+        File outputFile = OutputFileHelper.getOutputMediaFile(this, OutputFileHelper.MEDIA_TYPE_VIDEO);
+        if (outputFile == null) {
+            Log.d(LOG_TAG, "failed to create output file");
+            return false;
+        }
+        mediaRecorder.setOutputFile(outputFile.toString());
 
         // Step 5: Set the preview output
         mediaRecorder.setPreviewDisplay(cameraPreview.getHolder().getSurface());

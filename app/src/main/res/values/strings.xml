@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">TGM Camera</string>
+    <string name="permissions_denied_dialog_title">Permissions denied</string>
+    <string name="permissions_denied_dialog_message">Without this permissions the app is unable to capture photos and videos. Please allow this permissions in settings.</string>
+    <string name="permissions_denied_dialog_positive_button">OK</string>
 </resources>
