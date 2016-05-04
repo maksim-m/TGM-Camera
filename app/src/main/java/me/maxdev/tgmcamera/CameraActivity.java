@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
@@ -51,6 +52,7 @@ public class CameraActivity extends AppCompatActivity implements
     private MediaRecorder mediaRecorder;
     private OrientationChangeListener orientationChangeListener;
     private int currentMode = MODE_PHOTO;
+    private boolean autoFocusSupported = false;
     private boolean cameraReady = false;
     private boolean isRecording = false;
     private int toolbarHeight;
@@ -72,6 +74,8 @@ public class CameraActivity extends AppCompatActivity implements
         rootLayout.setOnSystemUiVisibilityChangeListener(this);
         hideSystemUi();
         orientationChangeListener = new OrientationChangeListener(this);
+        autoFocusSupported = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS);
+        Log.d(LOG_TAG, "AutoFocusSupported: " + autoFocusSupported);
     }
 
     @Override
@@ -178,14 +182,18 @@ public class CameraActivity extends AppCompatActivity implements
 
     private void capturePhoto() {
         final PictureCallback pictureCallback = new PictureCallback(this, this);
-        camera.autoFocus(new Camera.AutoFocusCallback() {
-            @Override
-            public void onAutoFocus(boolean success, Camera camera) {
-                Log.e("xxx", "onAutoFocus");
-                camera.takePicture(null, null, pictureCallback);
-                cameraReady = false;
-            }
-        });
+        if (autoFocusSupported) {
+            camera.autoFocus(new Camera.AutoFocusCallback() {
+                @Override
+                public void onAutoFocus(boolean success, Camera camera) {
+                    camera.takePicture(null, null, pictureCallback);
+                    cameraReady = false;
+                }
+            });
+        } else {
+            camera.takePicture(null, null, pictureCallback);
+            cameraReady = false;
+        }
     }
 
     @OnClick(R.id.button_ok)

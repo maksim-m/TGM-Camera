@@ -18,47 +18,64 @@ import me.maxdev.tgmcamera.util.PermissionsDeniedDialogFragment;
 public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = "MainActivity";
-    private static final int REQUEST_CAMERA_PERMISSION = 100;
+    private static final int REQUEST_PERMISSIONS = 100;
+    private static final String[] REQUIRED_PERMISSIONS = {Manifest.permission.CAMERA,
+            Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.RECORD_AUDIO
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            requestCameraPermission();
-        } else {
+        if (hasAllRequiredPermissions()) {
             startCameraActivity();
+        } else {
+            requestPermissions();
         }
     }
 
-    private void requestCameraPermission() {
+    private void requestPermissions() {
         Log.i(LOG_TAG, "CAMERA permission has NOT been granted. Requesting permission.");
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
             showPermissionsDeniedDialog();
         } else {
             // Camera permission has not been granted yet. Request it directly.
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
-                    REQUEST_CAMERA_PERMISSION);
+            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS,
+                    REQUEST_PERMISSIONS);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        request:
         switch (requestCode) {
-            case REQUEST_CAMERA_PERMISSION:
+            case REQUEST_PERMISSIONS:
                 Log.i(LOG_TAG, "Received response for Camera permission request.");
-                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.i(LOG_TAG, "CAMERA permission has now been granted.");
-                    startCameraActivity();
-                } else {
-                    Log.i(LOG_TAG, "CAMERA permission was NOT granted.");
+                if (grantResults.length != REQUIRED_PERMISSIONS.length) {
                     showPermissionsDeniedDialog();
                 }
+                for (int grantResult : grantResults) {
+                    if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                        showPermissionsDeniedDialog();
+                        break request;
+                    }
+                }
+                startCameraActivity();
                 break;
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
 
+    }
+
+    private boolean hasAllRequiredPermissions() {
+        for (String permission : REQUIRED_PERMISSIONS) {
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void startCameraActivity() {
