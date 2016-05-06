@@ -1,29 +1,20 @@
-package me.maxdev.tgmcamera.file;
+package me.maxdev.tgmcamera.media;
 
 import android.content.Context;
-import android.content.Intent;
 import android.hardware.Camera;
-import android.net.Uri;
-import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 import me.maxdev.tgmcamera.util.OnCaptureFinishedListener;
-import me.maxdev.tgmcamera.R;
 
 /**
  * Created by Max on 28.04.2016.
  */
 public class PictureCallback implements Camera.PictureCallback {
-
-
 
     private static final String LOG_TAG = "PictureCallback";
 
@@ -61,16 +52,7 @@ public class PictureCallback implements Camera.PictureCallback {
         }
         Log.d(LOG_TAG, "OK");
         listener.onSuccess();
-        addToGallery(pictureFile);
+        GalleryHelper.addToGallery(context, pictureFile);
     }
-
-    private void addToGallery(File file) {
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        Uri contentUri = Uri.fromFile(file);
-        mediaScanIntent.setData(contentUri);
-        context.sendBroadcast(mediaScanIntent);
-    }
-
-
 
 }

@@ -1,8 +1,9 @@
-package me.maxdev.tgmcamera.file;
+package me.maxdev.tgmcamera.media;
 
 import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.File;
@@ -22,18 +23,17 @@ public class OutputFileHelper {
 
     private static final String LOG_TAG = "OutputFileHelper";
 
-    private OutputFileHelper() { }
+    private OutputFileHelper() {
+    }
 
+    @Nullable
     public static File getOutputMediaFile(Context context, int type) {
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_DCIM), context.getString(R.string.app_name));
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
 
-        // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Log.d(LOG_TAG, "failed to create directory");
@@ -57,9 +57,18 @@ public class OutputFileHelper {
         return mediaFile;
     }
 
-    /**
-     * Create a file Uri for saving an image or video
-     */
+    public static File getOutputDir(Context context) {
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DCIM), context.getString(R.string.app_name));
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d(LOG_TAG, "failed to create directory");
+                return null;
+            }
+        }
+        return mediaStorageDir;
+    }
+
     public static Uri getOutputMediaFileUri(Context context, int type) {
         return Uri.fromFile(getOutputMediaFile(context, type));
     }

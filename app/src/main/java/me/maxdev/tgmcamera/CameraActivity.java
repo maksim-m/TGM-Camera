@@ -4,13 +4,19 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.FileObserver;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -23,8 +29,10 @@ import java.io.IOException;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import me.maxdev.tgmcamera.file.OutputFileHelper;
-import me.maxdev.tgmcamera.file.PictureCallback;
+import me.maxdev.tgmcamera.media.GalleryHelper;
+import me.maxdev.tgmcamera.media.OutputFileHelper;
+import me.maxdev.tgmcamera.media.PictureCallback;
+import me.maxdev.tgmcamera.media.VideoFileObserver;
 import me.maxdev.tgmcamera.util.OnCaptureFinishedListener;
 import me.maxdev.tgmcamera.util.OrientationChangeListener;
 
@@ -51,12 +59,12 @@ public class CameraActivity extends AppCompatActivity implements
     private CameraPreview cameraPreview;
     private MediaRecorder mediaRecorder;
     private OrientationChangeListener orientationChangeListener;
+    private static VideoFileObserver videoFileObserver;
     private int currentMode = MODE_PHOTO;
     private boolean autoFocusSupported = false;
     private boolean cameraReady = false;
     private boolean isRecording = false;
     private int toolbarHeight;
-
     private Runnable systemUiHider = new Runnable() {
         @Override
         public void run() {
@@ -64,7 +72,19 @@ public class CameraActivity extends AppCompatActivity implements
             hideSystemUi();
         }
     };
-
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(VideoFileObserver.BROADCAST_WRITE_DONE)) {
+                String fileName = intent.getStringExtra(VideoFileObserver.EXTRA_FILE_NAME_KEY);
+                Log.d(LOG_TAG, "Video file " + fileName + " WRITE_DONE");
+                videoFileObserver.stopWatching();
+                videoFileObserver = null;
+                GalleryHelper.addToGallery(context, fileName);
+                // TODO after video captured
+            }
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,6 +102,8 @@ public class CameraActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         showCameraPreview();
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver,
+                new IntentFilter(VideoFileObserver.BROADCAST_WRITE_DONE));
     }
 
     private void showCameraPreview() {
@@ -108,6 +130,7 @@ public class CameraActivity extends AppCompatActivity implements
             stopVideoRecording();
         }
         releaseCamera();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         orientationChangeListener.disable();
     }
 
@@ -127,7 +150,7 @@ public class CameraActivity extends AppCompatActivity implements
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(0); // reset all flags
         int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN |
-                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                View.SYSTEM_UI_FLAG_LOW_PROFILE |
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
         decorView.setSystemUiVisibility(uiOptions);
     }
@@ -288,7 +311,10 @@ public class CameraActivity extends AppCompatActivity implements
     }
 
     private boolean prepareVideoRecorder() {
-
+        if (videoFileObserver != null) {
+            Log.w(LOG_TAG, "prepareVideoRecorder(): Not ready yet (fileObserver is watching now).");
+            return false;
+        }
         mediaRecorder = new MediaRecorder();
 
         // Step 1: Unlock and set camera to MediaRecorder
@@ -308,6 +334,9 @@ public class CameraActivity extends AppCompatActivity implements
             Log.d(LOG_TAG, "failed to create output file");
             return false;
         }
+        videoFileObserver = new VideoFileObserver(this, OutputFileHelper.getOutputDir(this).getPath(),
+                FileObserver.CLOSE_WRITE);
+        videoFileObserver.startWatching();
         mediaRecorder.setOutputFile(outputFile.toString());
 
         // Step 5: Set the preview output
