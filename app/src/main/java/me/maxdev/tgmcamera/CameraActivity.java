@@ -61,6 +61,7 @@ public class CameraActivity extends AppCompatActivity implements
     private OrientationChangeListener orientationChangeListener;
     private static VideoFileObserver videoFileObserver;
     private int currentMode = MODE_PHOTO;
+    private int currentOrientation = OrientationChangeListener.ORIENTATION_PORTRAIT;
     private boolean autoFocusSupported = false;
     private boolean cameraReady = false;
     private boolean isRecording = false;
@@ -75,13 +76,13 @@ public class CameraActivity extends AppCompatActivity implements
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(VideoFileObserver.BROADCAST_WRITE_DONE)) {
+            if (intent.getAction().equals(VideoFileObserver.BROADCAST_WRITE_FINISHED)) {
                 String fileName = intent.getStringExtra(VideoFileObserver.EXTRA_FILE_NAME_KEY);
-                Log.d(LOG_TAG, "Video file " + fileName + " WRITE_DONE");
-                videoFileObserver.stopWatching();
-                videoFileObserver = null;
-                GalleryHelper.addToGallery(context, fileName);
-                // TODO after video captured
+                onVideoCaptured(fileName);
+            } else if (intent.getAction().equals(OrientationChangeListener.BROADCAST_ORIENTATION_CHANGED)) {
+                int newOrientation = intent.getIntExtra(OrientationChangeListener.EXTRA_NEW_ORIENTATION_KEY,
+                        OrientationChangeListener.ORIENTATION_NONE);
+                onOrientationChanged(newOrientation);
             }
         }
     };
@@ -102,8 +103,10 @@ public class CameraActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         showCameraPreview();
-        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver,
-                new IntentFilter(VideoFileObserver.BROADCAST_WRITE_DONE));
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(VideoFileObserver.BROADCAST_WRITE_FINISHED);
+        intentFilter.addAction(OrientationChangeListener.BROADCAST_ORIENTATION_CHANGED);
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, intentFilter);
     }
 
     private void showCameraPreview() {
@@ -289,6 +292,18 @@ public class CameraActivity extends AppCompatActivity implements
         currentMode = newMode;
     }
 
+    private void onOrientationChanged(int newOrientation) {
+        Log.d(LOG_TAG, "onOrientationChanged. New orientation == " + newOrientation);
+        // TODO
+    }
+
+    private void onVideoCaptured(String fileName) {
+        Log.d(LOG_TAG, "Video file " + fileName + " WRITE_DONE");
+        videoFileObserver.stopWatching();
+        videoFileObserver = null;
+        GalleryHelper.addToGallery(this, fileName);
+        // TODO after video captured
+    }
 
     private void resetCameraPreviews() {
         previewLayout.removeView(cameraPreview);

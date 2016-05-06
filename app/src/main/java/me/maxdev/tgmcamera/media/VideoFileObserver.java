@@ -13,7 +13,7 @@ import android.util.Log;
  */
 public class VideoFileObserver extends FileObserver {
 
-    public static final String BROADCAST_WRITE_DONE = "WriteDone";
+    public static final String BROADCAST_WRITE_FINISHED = "WriteFinished";
     public static final String EXTRA_FILE_NAME_KEY = "VideoFileName";
     private static final String LOG_TAG = "VideoFileObserver";
 
@@ -36,15 +36,15 @@ public class VideoFileObserver extends FileObserver {
                 Log.d(LOG_TAG, "run()");
                 if (event == CLOSE_WRITE && path.endsWith(".mp4")) {
                     VideoFileObserver.this.path = path;
-                    sendUpdateFinishedBroadcast();
+                    sendWriteFinishedBroadcast();
                 }
             }
         });
 
     }
 
-    private void sendUpdateFinishedBroadcast() {
-        Intent intent = new Intent(BROADCAST_WRITE_DONE);
+    private void sendWriteFinishedBroadcast() {
+        Intent intent = new Intent(BROADCAST_WRITE_FINISHED);
         intent.putExtra(EXTRA_FILE_NAME_KEY, path);
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
