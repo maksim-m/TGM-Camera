@@ -9,6 +9,8 @@ import android.view.SurfaceView;
 import java.io.IOException;
 import java.util.List;
 
+import me.maxdev.tgmcamera.util.OrientationChangeListener;
+
 /**
  * Created by Max on 28.04.2016.
  */
@@ -17,6 +19,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private static final String LOG_TAG = "CameraPreview";
     private static final float DEFAULT_ASPECT_RATIO = 4f / 3f;
 
+    private Context context;
     private Camera camera;
     private SurfaceHolder surfaceHolder;
     private List<Camera.Size> supportedPreviewSizes;
@@ -26,6 +29,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public CameraPreview(Context context, Camera camera, float aspectRatio) {
         super(context);
+        this.context = context;
         this.aspectRatio = aspectRatio;
         this.camera = camera;
         this.surfaceHolder = getHolder();
@@ -174,5 +178,48 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
         Log.e("xxx", "Result: " + pictureSize.width + " x " + pictureSize.height);
         return pictureSize;
+    }
+
+    public void updateCameraOrientation(int newOrientation) {
+        Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
+        Log.d(LOG_TAG, "updateCameraOrientation() newOrientation == " + newOrientation);
+        Log.d(LOG_TAG, "info.orientation == " + info.orientation);
+        int degrees = 0;
+
+        switch (newOrientation) {
+            case OrientationChangeListener.ORIENTATION_NONE:
+                degrees = 0;
+                break;
+            case OrientationChangeListener.ORIENTATION_PORTRAIT:
+                degrees = 270;
+                break;
+
+            case OrientationChangeListener.ORIENTATION_LANDSCAPE:
+                degrees = 180;
+                break;
+
+            case OrientationChangeListener.ORIENTATION_PORTRAIT_FLIPPED:
+                degrees = 90;
+                break;
+
+            case OrientationChangeListener.ORIENTATION_LANDSCAPE_FLIPPED:
+                degrees = 0;
+                break;
+
+        }
+        Log.d(LOG_TAG, "degrees == " + degrees);
+
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;
+        } else {
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        Log.d(LOG_TAG, "result == " + result);
+
+        Camera.Parameters parameters = camera.getParameters();
+        parameters.setRotation(result);
+        camera.setParameters(parameters);
     }
 }

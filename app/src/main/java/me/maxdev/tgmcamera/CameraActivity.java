@@ -145,6 +145,7 @@ public class CameraActivity extends AppCompatActivity implements
         } else {
             float aspectRatio = newMode == MODE_PHOTO ? 4f / 3f : 16f / 9f;
             cameraPreview = new CameraPreview(this, camera, aspectRatio);
+            cameraPreview.updateCameraOrientation(currentOrientation);
             previewLayout.addView(cameraPreview);
         }
     }
@@ -294,6 +295,7 @@ public class CameraActivity extends AppCompatActivity implements
 
     private void onOrientationChanged(int newOrientation) {
         Log.d(LOG_TAG, "onOrientationChanged. New orientation == " + newOrientation);
+        cameraPreview.updateCameraOrientation(newOrientation);
         // TODO
     }
 
