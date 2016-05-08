@@ -181,12 +181,19 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void updateCameraOrientation(int newOrientation) {
+        int rotation = getOutputMediaRotation(newOrientation);
+        Camera.Parameters parameters = camera.getParameters();
+        parameters.setRotation(rotation);
+        camera.setParameters(parameters);
+    }
+
+    public int getOutputMediaRotation(int orientation) {
         Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
-        Log.d(LOG_TAG, "updateCameraOrientation() newOrientation == " + newOrientation);
+        Log.d(LOG_TAG, "updateCameraOrientation() newOrientation == " + orientation);
         Log.d(LOG_TAG, "info.orientation == " + info.orientation);
         int degrees = 0;
 
-        switch (newOrientation) {
+        switch (orientation) {
             case OrientationChangeListener.ORIENTATION_NONE:
                 degrees = 0;
                 break;
@@ -217,9 +224,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             result = (info.orientation - degrees + 360) % 360;
         }
         Log.d(LOG_TAG, "result == " + result);
-
-        Camera.Parameters parameters = camera.getParameters();
-        parameters.setRotation(result);
-        camera.setParameters(parameters);
+        return result;
     }
 }

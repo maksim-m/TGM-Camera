@@ -332,6 +332,7 @@ public class CameraActivity extends AppCompatActivity implements
             Log.w(LOG_TAG, "prepareVideoRecorder(): Not ready yet (fileObserver is watching now).");
             return false;
         }
+        cameraPreview.updateCameraOrientation(currentOrientation);
         mediaRecorder = new MediaRecorder();
 
         // Step 1: Unlock and set camera to MediaRecorder
@@ -358,6 +359,8 @@ public class CameraActivity extends AppCompatActivity implements
 
         // Step 5: Set the preview output
         mediaRecorder.setPreviewDisplay(cameraPreview.getHolder().getSurface());
+
+        mediaRecorder.setOrientationHint(cameraPreview.getOutputMediaRotation(currentOrientation));
 
         // Step 6: Prepare configured MediaRecorder
         try {
