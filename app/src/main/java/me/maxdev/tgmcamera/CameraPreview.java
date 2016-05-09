@@ -3,8 +3,11 @@ package me.maxdev.tgmcamera;
 import android.content.Context;
 import android.hardware.Camera;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.Window;
+import android.view.WindowManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,17 +24,19 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     private Context context;
     private Camera camera;
+    private CameraIdProvider cameraIdProvider;
     private SurfaceHolder surfaceHolder;
     private List<Camera.Size> supportedPreviewSizes;
     private Camera.Size previewSize;
     private float aspectRatio;
     private List<Camera.Size> supportedPictureSizes;
 
-    public CameraPreview(Context context, Camera camera, float aspectRatio) {
+    public CameraPreview(Context context, Camera camera, CameraIdProvider cameraIdProvider, float aspectRatio) {
         super(context);
         this.context = context;
         this.aspectRatio = aspectRatio;
         this.camera = camera;
+        this.cameraIdProvider = cameraIdProvider;
         this.surfaceHolder = getHolder();
         this.surfaceHolder.addCallback(this);
         if (camera != null) {
@@ -189,41 +194,59 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public int getOutputMediaRotation(int orientation) {
         Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
+        Camera.getCameraInfo(cameraIdProvider.getCurrentCameraId(), info);
         Log.d(LOG_TAG, "updateCameraOrientation() newOrientation == " + orientation);
         Log.d(LOG_TAG, "info.orientation == " + info.orientation);
         int degrees = 0;
 
+        /*int rotation = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
+        Log.d(LOG_TAG, "rotation == " + rotation);
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
+        }*/
         switch (orientation) {
             case OrientationChangeListener.ORIENTATION_NONE:
                 degrees = 0;
                 break;
             case OrientationChangeListener.ORIENTATION_PORTRAIT:
+                degrees = 0;
+                break;
+            case OrientationChangeListener.ORIENTATION_LANDSCAPE:
                 degrees = 270;
                 break;
-
-            case OrientationChangeListener.ORIENTATION_LANDSCAPE:
+            case OrientationChangeListener.ORIENTATION_PORTRAIT_FLIPPED:
                 degrees = 180;
                 break;
-
-            case OrientationChangeListener.ORIENTATION_PORTRAIT_FLIPPED:
-                degrees = 90;
-                break;
-
             case OrientationChangeListener.ORIENTATION_LANDSCAPE_FLIPPED:
-                degrees = 0;
+                degrees = 90;
                 break;
 
         }
         Log.d(LOG_TAG, "degrees == " + degrees);
 
         int result;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+        if (cameraIdProvider.getCurrentCameraId() == Camera.CameraInfo.CAMERA_FACING_FRONT) {
             result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;
+            result = (360 - result) % 360; // compensate the mirror
         } else {
             result = (info.orientation - degrees + 360) % 360;
         }
         Log.d(LOG_TAG, "result == " + result);
         return result;
+    }
+
+    public interface CameraIdProvider {
+        int getCurrentCameraId();
     }
 }

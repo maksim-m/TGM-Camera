@@ -21,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import java.io.File;
@@ -37,7 +38,7 @@ import me.maxdev.tgmcamera.util.OnCaptureFinishedListener;
 import me.maxdev.tgmcamera.util.OrientationChangeListener;
 
 public class CameraActivity extends AppCompatActivity implements
-        View.OnSystemUiVisibilityChangeListener, OnCaptureFinishedListener {
+        View.OnSystemUiVisibilityChangeListener, OnCaptureFinishedListener, CameraPreview.CameraIdProvider {
 
     private static final String LOG_TAG = "CameraActivity";
 
@@ -54,6 +55,8 @@ public class CameraActivity extends AppCompatActivity implements
     View blockingToolbar;
     @BindView(R.id.toolbar)
     RelativeLayout toolbar;
+    @BindView(R.id.button_switch_camera)
+    ImageView switchCameraButton;
 
     private Camera camera;
     private CameraPreview cameraPreview;
@@ -62,7 +65,9 @@ public class CameraActivity extends AppCompatActivity implements
     private static VideoFileObserver videoFileObserver;
     private int currentMode = MODE_PHOTO;
     private int currentOrientation = OrientationChangeListener.ORIENTATION_PORTRAIT;
+    private int currentCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     private boolean autoFocusSupported = false;
+    private boolean hasFrontCamera = false;
     private boolean cameraReady = false;
     private boolean isRecording = false;
     private int toolbarHeight;
@@ -96,6 +101,7 @@ public class CameraActivity extends AppCompatActivity implements
         hideSystemUi();
         orientationChangeListener = new OrientationChangeListener(this);
         autoFocusSupported = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS);
+        initSwitchCameraButton();
         Log.d(LOG_TAG, "AutoFocusSupported: " + autoFocusSupported);
     }
 
@@ -144,9 +150,17 @@ public class CameraActivity extends AppCompatActivity implements
             // TODO: show error dialog
         } else {
             float aspectRatio = newMode == MODE_PHOTO ? 4f / 3f : 16f / 9f;
-            cameraPreview = new CameraPreview(this, camera, aspectRatio);
+            cameraPreview = new CameraPreview(this, camera, this, aspectRatio);
             cameraPreview.updateCameraOrientation(currentOrientation);
             previewLayout.addView(cameraPreview);
+        }
+    }
+
+    private void initSwitchCameraButton() {
+        hasFrontCamera = Camera.getNumberOfCameras() > 1;
+        Log.d(LOG_TAG, "hasFrontCamera: " + hasFrontCamera);
+        if (hasFrontCamera) {
+            switchCameraButton.setVisibility(View.VISIBLE);
         }
     }
 
@@ -174,6 +188,18 @@ public class CameraActivity extends AppCompatActivity implements
         } else {
             Log.w(LOG_TAG, "Camera not ready yet.");
         }
+    }
+
+    @OnClick(R.id.button_switch_camera)
+    void onSwitchCameraButtonClicked() {
+        releaseCamera();
+        resetCameraPreviews();
+        if (currentCameraId == Camera.CameraInfo.CAMERA_FACING_BACK) {
+            currentCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+        } else {
+            currentCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+        }
+        initCameraPreview(currentMode);
     }
 
     private void startVideoRecording() {
@@ -295,7 +321,9 @@ public class CameraActivity extends AppCompatActivity implements
 
     private void onOrientationChanged(int newOrientation) {
         Log.d(LOG_TAG, "onOrientationChanged. New orientation == " + newOrientation);
-        cameraPreview.updateCameraOrientation(newOrientation);
+        if (camera != null) {
+            cameraPreview.updateCameraOrientation(newOrientation);
+        }
         // TODO
     }
 
@@ -316,10 +344,10 @@ public class CameraActivity extends AppCompatActivity implements
         rootLayout.getHandler().postDelayed(systemUiHider, 2000);
     }
 
-    public static Camera getCameraInstance() {
+    public Camera getCameraInstance() {
         Camera camera = null;
         try {
-            camera = Camera.open();
+            camera = Camera.open(currentCameraId);
         } catch (Exception e) {
             // Camera is not available (in use or does not exist)
             // TODO
@@ -406,4 +434,8 @@ public class CameraActivity extends AppCompatActivity implements
         cameraReady = true;
     }
 
+    @Override
+    public int getCurrentCameraId() {
+        return currentCameraId;
+    }
 }
