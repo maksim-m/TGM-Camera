@@ -199,22 +199,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         Log.d(LOG_TAG, "info.orientation == " + info.orientation);
         int degrees = 0;
 
-        /*int rotation = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
-        Log.d(LOG_TAG, "rotation == " + rotation);
-        switch (rotation) {
-            case Surface.ROTATION_0:
-                degrees = 0;
-                break;
-            case Surface.ROTATION_90:
-                degrees = 90;
-                break;
-            case Surface.ROTATION_180:
-                degrees = 180;
-                break;
-            case Surface.ROTATION_270:
-                degrees = 270;
-                break;
-        }*/
         switch (orientation) {
             case OrientationChangeListener.ORIENTATION_NONE:
                 degrees = 0;
@@ -237,6 +221,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         int result;
         if (cameraIdProvider.getCurrentCameraId() == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            if (orientation == OrientationChangeListener.ORIENTATION_PORTRAIT) {
+                degrees = 180;
+            } else if (orientation == OrientationChangeListener.ORIENTATION_PORTRAIT_FLIPPED) {
+                degrees = 0;
+            }
             result = (info.orientation + degrees) % 360;
             result = (360 - result) % 360; // compensate the mirror
         } else {
