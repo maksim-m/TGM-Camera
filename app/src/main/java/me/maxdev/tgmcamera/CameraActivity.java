@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.AnimationDrawable;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
@@ -212,6 +213,9 @@ public class CameraActivity extends AppCompatActivity implements
     void onTakePictureClicked() {
         if (cameraReady) {
             if (currentMode == MODE_PHOTO) {
+                takePictureButton.setBackground(getResources().getDrawable(R.drawable.shot_animation));
+                ((AnimationDrawable) takePictureButton.getBackground()).setOneShot(true);
+                ((AnimationDrawable) takePictureButton.getBackground()).start();
                 capturePhoto();
             } else if (currentMode == MODE_VIDEO) {
                 if (isRecording) {
