@@ -19,6 +19,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -36,6 +37,7 @@ import me.maxdev.tgmcamera.media.OutputFileHelper;
 import me.maxdev.tgmcamera.media.PictureCallback;
 import me.maxdev.tgmcamera.media.VideoFileObserver;
 import me.maxdev.tgmcamera.util.OnCaptureFinishedListener;
+import me.maxdev.tgmcamera.util.OnSwipeTouchListener;
 import me.maxdev.tgmcamera.util.OrientationChangeListener;
 
 public class CameraActivity extends AppCompatActivity implements
@@ -47,6 +49,7 @@ public class CameraActivity extends AppCompatActivity implements
     private static final int MODE_VIDEO = 1;
 
     private static final int SHORT_ANIMATION_DURATION = 400;
+    private static VideoFileObserver videoFileObserver;
 
     @BindView(R.id.layout_root)
     FrameLayout rootLayout;
@@ -69,7 +72,6 @@ public class CameraActivity extends AppCompatActivity implements
     private CameraPreview cameraPreview;
     private MediaRecorder mediaRecorder;
     private OrientationChangeListener orientationChangeListener;
-    private static VideoFileObserver videoFileObserver;
     private int currentMode = MODE_PHOTO;
     private int currentOrientation = OrientationChangeListener.ORIENTATION_PORTRAIT;
     private int currentCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
@@ -110,7 +112,28 @@ public class CameraActivity extends AppCompatActivity implements
         orientationChangeListener = new OrientationChangeListener(this);
         autoFocusSupported = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS);
         initSwitchCameraButton();
-        Log.d(LOG_TAG, "AutoFocusSupported: " + autoFocusSupported);
+    }
+
+    private void initGestureDetector() {
+        if (cameraPreview == null) {
+            Log.d(LOG_TAG, "initGestureDetector: cameraPreview not ready.");
+            return;
+        }
+        cameraPreview.setOnTouchListener(new OnSwipeTouchListener(this) {
+            @Override
+            public void onSwipeTop() {
+                if (currentMode == MODE_PHOTO) {
+                    changeCurrentMode();
+                }
+            }
+
+            @Override
+            public void onSwipeBottom() {
+                if (currentMode == MODE_VIDEO) {
+                    changeCurrentMode();
+                }
+            }
+        });
     }
 
     @Override
@@ -128,6 +151,7 @@ public class CameraActivity extends AppCompatActivity implements
         cameraReady = true;
         hideSystemUi();
         orientationChangeListener.enable();
+        initGestureDetector();
     }
 
     @Override
