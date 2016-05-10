@@ -19,7 +19,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -151,7 +150,6 @@ public class CameraActivity extends AppCompatActivity implements
         cameraReady = true;
         hideSystemUi();
         orientationChangeListener.enable();
-        initGestureDetector();
     }
 
     @Override
@@ -187,6 +185,7 @@ public class CameraActivity extends AppCompatActivity implements
             cameraPreview = new CameraPreview(this, camera, this, aspectRatio);
             cameraPreview.updateCameraOrientation(currentOrientation);
             previewLayout.addView(cameraPreview);
+            initGestureDetector();
         }
     }
 
@@ -195,6 +194,8 @@ public class CameraActivity extends AppCompatActivity implements
         Log.d(LOG_TAG, "hasFrontCamera: " + hasFrontCamera);
         if (hasFrontCamera) {
             switchCameraButton.setVisibility(View.VISIBLE);
+        } else {
+            switchCameraButton.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -220,7 +221,7 @@ public class CameraActivity extends AppCompatActivity implements
                 }
             }
         } else {
-            Log.w(LOG_TAG, "Camera not ready yet.");
+            Log.d(LOG_TAG, "Camera not ready yet.");
         }
     }
 
@@ -281,11 +282,6 @@ public class CameraActivity extends AppCompatActivity implements
             camera.takePicture(null, null, pictureCallback);
             cameraReady = false;
         }
-    }
-
-    @OnClick(R.id.button_ok)
-    void onOkButtonClicked() {
-        changeCurrentMode();
     }
 
     private void changeCurrentMode() {
