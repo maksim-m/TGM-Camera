@@ -21,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
@@ -57,6 +58,12 @@ public class CameraActivity extends AppCompatActivity implements
     RelativeLayout toolbar;
     @BindView(R.id.button_switch_camera)
     ImageView switchCameraButton;
+    @BindView(R.id.button_take_picture)
+    ImageView takePictureButton;
+    @BindView(R.id.button_ok)
+    ImageButton okButton;
+    @BindView(R.id.button_cancel)
+    ImageButton cancelButton;
 
     private Camera camera;
     private CameraPreview cameraPreview;
@@ -71,6 +78,7 @@ public class CameraActivity extends AppCompatActivity implements
     private boolean cameraReady = false;
     private boolean isRecording = false;
     private int toolbarHeight;
+    private int smallPreviewHeight;
     private Runnable systemUiHider = new Runnable() {
         @Override
         public void run() {
@@ -129,6 +137,8 @@ public class CameraActivity extends AppCompatActivity implements
             toolbarHeight = blockingToolbar.getMeasuredWidth();
         }
         toolbar.setMinimumWidth(toolbarHeight);
+        blockingToolbar.setMinimumWidth(toolbarHeight);
+        smallPreviewHeight = previewLayout.getMeasuredWidth();
         toolbar.requestLayout();
     }
 
@@ -423,7 +433,9 @@ public class CameraActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onSuccess() {
+    public void onSuccess(File file) {
+        Log.d(LOG_TAG, "onSuccess(). file == " + file);
+
         camera.startPreview();
         cameraReady = true;
     }
@@ -432,6 +444,29 @@ public class CameraActivity extends AppCompatActivity implements
     public void onError() {
         // TODO
         cameraReady = true;
+    }
+
+    private void hideView(View view) {
+        final View v = view;
+        v.animate()
+                .alpha(0f)
+                .setDuration(SHORT_ANIMATION_DURATION)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        v.setVisibility(View.GONE);
+                    }
+                });
+    }
+
+    private void showView(View view) {
+        view.setAlpha(0f);
+        view.setVisibility(View.VISIBLE);
+        view.animate()
+                .alpha(1f)
+                .setDuration(SHORT_ANIMATION_DURATION)
+                .setListener(null);
+
     }
 
     @Override

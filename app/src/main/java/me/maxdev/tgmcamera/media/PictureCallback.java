@@ -2,6 +2,10 @@ package me.maxdev.tgmcamera.media;
 
 import android.content.Context;
 import android.hardware.Camera;
+import android.os.AsyncTask;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import java.io.File;
@@ -28,31 +32,44 @@ public class PictureCallback implements Camera.PictureCallback {
 
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
-        File pictureFile = OutputFileHelper.getOutputMediaFile(context,
-                OutputFileHelper.MEDIA_TYPE_IMAGE);
-        if (pictureFile == null) {
-            Log.e(LOG_TAG, "Can not create output file.");
-            // TODO
-            listener.onError();
-            return;
+        new SavePhotoTask().execute(data);
+    }
+
+    private class SavePhotoTask extends AsyncTask<byte[], Void, File> {
+        @Override
+        protected File doInBackground(byte[]... data) {
+            final File pictureFile = OutputFileHelper.getOutputMediaFile(context,
+                    OutputFileHelper.MEDIA_TYPE_IMAGE);
+            if (pictureFile == null) {
+                Log.e(LOG_TAG, "Can not create output file.");
+                // TODO
+                listener.onError();
+                return null;
+            }
+
+            try {
+                FileOutputStream fos = new FileOutputStream(pictureFile);
+                fos.write(data[0]);
+                fos.close();
+            } catch (FileNotFoundException e) {
+                Log.d(LOG_TAG, "File not found: " + e.getMessage());
+                listener.onError();
+                return null;
+            } catch (IOException e) {
+                Log.d(LOG_TAG, "Error accessing file: " + e.getMessage());
+                listener.onError();
+                return null;
+            }
+            Log.d(LOG_TAG, "OK");
+            GalleryHelper.addToGallery(context, pictureFile);
+
+            return pictureFile;
         }
 
-        try {
-            FileOutputStream fos = new FileOutputStream(pictureFile);
-            fos.write(data);
-            fos.close();
-        } catch (FileNotFoundException e) {
-            Log.d(LOG_TAG, "File not found: " + e.getMessage());
-            listener.onError();
-            return;
-        } catch (IOException e) {
-            Log.d(LOG_TAG, "Error accessing file: " + e.getMessage());
-            listener.onError();
-            return;
+        @Override
+        protected void onPostExecute(File file) {
+            listener.onSuccess(file);
         }
-        Log.d(LOG_TAG, "OK");
-        listener.onSuccess();
-        GalleryHelper.addToGallery(context, pictureFile);
     }
 
 }

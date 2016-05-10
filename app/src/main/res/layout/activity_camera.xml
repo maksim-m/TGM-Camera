@@ -12,7 +12,6 @@
         android:layout_height="match_parent"
         android:orientation="horizontal">
 
-
         <FrameLayout
             android:id="@+id/layout_preview"
             android:layout_width="wrap_content"
@@ -51,14 +50,25 @@
             android:layout_centerVertical="true"
             android:src="@drawable/circle_button" />
 
-        <ImageView
+        <ImageButton
             android:id="@+id/button_ok"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="25dp"
-            android:src="@drawable/btn_done" />
+            android:background="@drawable/btn_done"
+            android:visibility="invisible"/>
+
+        <ImageButton
+            android:id="@+id/button_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="25dp"
+            android:background="@drawable/button_cancel"
+            android:visibility="invisible"/>
 
         <!--<me.maxdev.tgmcamera.widget.ShutterButton
             android:layout_width="60dp"
