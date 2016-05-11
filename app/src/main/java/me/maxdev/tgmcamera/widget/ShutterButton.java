@@ -3,11 +3,12 @@ package me.maxdev.tgmcamera.widget;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 
 import me.maxdev.tgmcamera.R;
 
@@ -77,6 +78,8 @@ public class ShutterButton extends View {
             invalidate();
         }
     };
+    private Rect square;
+    private RectF squareF;
 
     public ShutterButton(Context context) {
         super(context);
@@ -111,6 +114,16 @@ public class ShutterButton extends View {
         invalidate();
     }
 
+    public void startVideoRecordingMode() {
+        currentMode = MODE_VIDEO_RECORD;
+        invalidate();
+    }
+
+    public void stopVideoRecordingMode() {
+        currentMode = MODE_VIDEO;
+        invalidate();
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -121,6 +134,8 @@ public class ShutterButton extends View {
         radius = Math.min(width, height) / 2.0f;
         outerBlueCircleRadius = radius - 12;
         innerBlueCircleRadius = radius - 42;
+        square = new Rect(60, 60, width - 60, height - 60);
+        squareF = new RectF(square);
     }
 
     @Override
@@ -135,6 +150,10 @@ public class ShutterButton extends View {
             case MODE_VIDEO:
                 canvas.drawCircle(cx, cy, radius, whiteCirclePaint);
                 canvas.drawCircle(cx, cy, radius - 70, recordCirclePaint);
+                break;
+            case MODE_VIDEO_RECORD:
+                canvas.drawCircle(cx, cy, radius, recordCirclePaint);
+                canvas.drawRoundRect(squareF, 10, 10, whiteCirclePaint);
                 break;
         }
 

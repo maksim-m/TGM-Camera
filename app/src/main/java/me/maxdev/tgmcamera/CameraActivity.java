@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.AnimationDrawable;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
@@ -248,6 +247,7 @@ public class CameraActivity extends AppCompatActivity implements
             mediaRecorder.start();
 
             // TODO inform the user that recording has started
+            shutterButton.startVideoRecordingMode();
 
             isRecording = true;
         } else {
@@ -267,6 +267,7 @@ public class CameraActivity extends AppCompatActivity implements
         }
 
         // TODO inform the user that recording has stopped
+        shutterButton.stopVideoRecordingMode();
 
         isRecording = false;
     }
