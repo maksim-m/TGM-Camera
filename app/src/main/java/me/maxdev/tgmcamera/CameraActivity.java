@@ -39,6 +39,7 @@ import me.maxdev.tgmcamera.media.VideoFileObserver;
 import me.maxdev.tgmcamera.util.OnCaptureFinishedListener;
 import me.maxdev.tgmcamera.util.OnSwipeTouchListener;
 import me.maxdev.tgmcamera.util.OrientationChangeListener;
+import me.maxdev.tgmcamera.widget.ShutterButton;
 
 public class CameraActivity extends AppCompatActivity implements
         View.OnSystemUiVisibilityChangeListener, OnCaptureFinishedListener, CameraPreview.CameraIdProvider {
@@ -61,12 +62,12 @@ public class CameraActivity extends AppCompatActivity implements
     RelativeLayout toolbar;
     @BindView(R.id.button_switch_camera)
     ImageView switchCameraButton;
-    @BindView(R.id.button_take_picture)
-    ImageView takePictureButton;
     @BindView(R.id.button_ok)
     ImageButton okButton;
     @BindView(R.id.button_cancel)
     ImageButton cancelButton;
+    @BindView(R.id.button_shutter)
+    ShutterButton shutterButton;
 
     private Camera camera;
     private CameraPreview cameraPreview;
@@ -209,13 +210,11 @@ public class CameraActivity extends AppCompatActivity implements
         decorView.setSystemUiVisibility(uiOptions);
     }
 
-    @OnClick(R.id.button_take_picture)
-    void onTakePictureClicked() {
+    @OnClick(R.id.button_shutter)
+    void onShutterButtonClicked() {
         if (cameraReady) {
             if (currentMode == MODE_PHOTO) {
-                takePictureButton.setBackground(getResources().getDrawable(R.drawable.shot_animation));
-                ((AnimationDrawable) takePictureButton.getBackground()).setOneShot(true);
-                ((AnimationDrawable) takePictureButton.getBackground()).start();
+                shutterButton.animateCapture();
                 capturePhoto();
             } else if (currentMode == MODE_VIDEO) {
                 if (isRecording) {
@@ -321,6 +320,7 @@ public class CameraActivity extends AppCompatActivity implements
                         }
                     });
                     colorAnimation.start();
+                    shutterButton.startVideoMode();
                 }
             }, 300);
 
@@ -348,6 +348,7 @@ public class CameraActivity extends AppCompatActivity implements
                 }
             });
             colorAnimation.start();
+            shutterButton.startPhotoMode();
         }
 
         currentMode = newMode;

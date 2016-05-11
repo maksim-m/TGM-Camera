@@ -39,15 +39,14 @@
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:src="@drawable/btn_switch"
-            android:layout_below="@+id/button_take_picture"
+            android:layout_below="@+id/button_shutter"
             android:visibility="invisible" />
 
-        <ImageView
-            android:id="@+id/button_take_picture"
+        <me.maxdev.tgmcamera.widget.ShutterButton
+            android:id="@+id/button_shutter"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:layout_centerInParent="true"
-            android:background="@drawable/shot_animation" />
+            android:layout_centerInParent="true" />
 
         <ImageButton
             android:id="@+id/button_ok"
@@ -55,7 +54,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:layout_above="@+id/button_take_picture"
+            android:layout_above="@+id/button_shutter"
             android:src="@drawable/btn_done"
             android:background="@color/colorTransparent"
             android:visibility="invisible"/>
@@ -66,16 +65,10 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:layout_below="@+id/button_take_picture"
+            android:layout_below="@+id/button_shutter"
             android:src="@drawable/button_cancel"
             android:background="@color/colorTransparent"
             android:visibility="invisible" />
-
-        <me.maxdev.tgmcamera.widget.ShutterButton
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="68dp"
-            android:visibility="gone"/>
 
     </RelativeLayout>
 

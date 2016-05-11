@@ -10,4 +10,5 @@
     <color name="shutterButtonInnerCircleColor">#50a8f5</color>
     <color name="shutterButtonOuterCircleColor">#3d96e3</color>
     <color name="shutterButtonCornerColor">#ffffff</color>
+    <color name="shutterButtonRecordCircleColor">#cd4649</color>
 </resources>
