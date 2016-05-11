@@ -122,14 +122,14 @@ public class CameraActivity extends AppCompatActivity implements
         cameraPreview.setOnTouchListener(new OnSwipeTouchListener(this) {
             @Override
             public void onSwipeTop() {
-                if (currentMode == MODE_PHOTO) {
+                if (currentMode == MODE_VIDEO && !isRecording) {
                     changeCurrentMode();
                 }
             }
 
             @Override
             public void onSwipeBottom() {
-                if (currentMode == MODE_VIDEO) {
+                if (currentMode == MODE_PHOTO) {
                     changeCurrentMode();
                 }
             }
@@ -240,6 +240,7 @@ public class CameraActivity extends AppCompatActivity implements
     }
 
     private void startVideoRecording() {
+
         // initialize video camera
         if (prepareVideoRecorder()) {
             // Camera is available and unlocked, MediaRecorder is prepared,
@@ -248,6 +249,8 @@ public class CameraActivity extends AppCompatActivity implements
 
             // TODO inform the user that recording has started
             shutterButton.startVideoRecordingMode();
+            makeInvisible(switchCameraButton);
+            makeToolbarTransparent();
 
             isRecording = true;
         } else {
@@ -267,7 +270,10 @@ public class CameraActivity extends AppCompatActivity implements
         }
 
         // TODO inform the user that recording has stopped
+        makeToolbarVisible();
         shutterButton.stopVideoRecordingMode();
+        makeVisible(switchCameraButton);
+
 
         isRecording = false;
     }
@@ -472,7 +478,7 @@ public class CameraActivity extends AppCompatActivity implements
         cameraReady = true;
     }
 
-    private void hideView(View view) {
+    private void makeInvisible(View view) {
         final View v = view;
         v.animate()
                 .alpha(0f)
@@ -480,12 +486,12 @@ public class CameraActivity extends AppCompatActivity implements
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        v.setVisibility(View.GONE);
+                        v.setVisibility(View.INVISIBLE);
                     }
                 });
     }
 
-    private void showView(View view) {
+    private void makeVisible(View view) {
         view.setAlpha(0f);
         view.setVisibility(View.VISIBLE);
         view.animate()
@@ -493,6 +499,34 @@ public class CameraActivity extends AppCompatActivity implements
                 .setDuration(SHORT_ANIMATION_DURATION)
                 .setListener(null);
 
+    }
+
+    private void makeToolbarTransparent() {
+        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                getResources().getColor(R.color.colorToolbarTransparent),
+                getResources().getColor(R.color.colorTransparent));
+        colorAnimation.setDuration(SHORT_ANIMATION_DURATION); // milliseconds
+        colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animator) {
+                toolbar.setBackgroundColor((int) animator.getAnimatedValue());
+            }
+        });
+        colorAnimation.start();
+    }
+
+    private void makeToolbarVisible() {
+        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                getResources().getColor(R.color.colorTransparent),
+                getResources().getColor(R.color.colorToolbarTransparent));
+        colorAnimation.setDuration(SHORT_ANIMATION_DURATION); // milliseconds
+        colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animator) {
+                toolbar.setBackgroundColor((int) animator.getAnimatedValue());
+            }
+        });
+        colorAnimation.start();
     }
 
     @Override
