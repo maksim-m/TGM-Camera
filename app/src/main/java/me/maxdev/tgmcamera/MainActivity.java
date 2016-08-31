@@ -12,9 +12,6 @@ import android.util.Log;
 
 import me.maxdev.tgmcamera.util.PermissionsDeniedDialogFragment;
 
-/**
- * Created by Max on 02.05.2016.
- */
 public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = "MainActivity";
