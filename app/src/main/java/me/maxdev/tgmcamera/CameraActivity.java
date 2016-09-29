@@ -55,8 +55,6 @@ public class CameraActivity extends AppCompatActivity implements
     FrameLayout rootLayout;
     @BindView(R.id.layout_preview)
     FrameLayout previewLayout;
-    @BindView(R.id.blocking_toolbar)
-    View blockingToolbar;
     @BindView(R.id.toolbar)
     RelativeLayout toolbar;
     @BindView(R.id.button_switch_camera)
@@ -79,8 +77,6 @@ public class CameraActivity extends AppCompatActivity implements
     private boolean hasFrontCamera = false;
     private boolean cameraReady = false;
     private boolean isRecording = false;
-    private int toolbarHeight;
-    private int smallPreviewHeight;
     private Runnable systemUiHider = new Runnable() {
         @Override
         public void run() {
@@ -154,18 +150,6 @@ public class CameraActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (blockingToolbar.getVisibility() != View.GONE) {
-            toolbarHeight = blockingToolbar.getMeasuredWidth();
-        }
-        toolbar.setMinimumWidth(toolbarHeight);
-        blockingToolbar.setMinimumWidth(toolbarHeight);
-        smallPreviewHeight = previewLayout.getMeasuredWidth();
-        toolbar.requestLayout();
-    }
-
-    @Override
     protected void onPause() {
         super.onPause();
         if (isRecording) {
@@ -182,8 +166,8 @@ public class CameraActivity extends AppCompatActivity implements
         if (camera == null) {
             // TODO: show error dialog
         } else {
-            float aspectRatio = newMode == MODE_PHOTO ? 4f / 3f : 16f / 9f;
-            cameraPreview = new CameraPreview(this, camera, this, aspectRatio);
+            //float aspectRatio = newMode == MODE_PHOTO ? 4f / 3f : 16f / 9f;
+            cameraPreview = new CameraPreview(this, camera, this);
             cameraPreview.updateCameraOrientation(currentOrientation);
             previewLayout.addView(cameraPreview);
             initGestureDetector();
@@ -296,7 +280,7 @@ public class CameraActivity extends AppCompatActivity implements
 
     private void changeCurrentMode() {
         final int newMode = currentMode == MODE_PHOTO ? MODE_VIDEO : MODE_PHOTO;
-        final float aspectRatio = newMode == MODE_PHOTO ? 4f / 3f : 16f / 9f;
+        //final float aspectRatio = newMode == MODE_PHOTO ? 4f / 3f : 16f / 9f;
 
         if (isRecording) {
             stopVideoRecording();
@@ -304,14 +288,6 @@ public class CameraActivity extends AppCompatActivity implements
 
         // update toolbar
         if (newMode == MODE_VIDEO) {
-
-            toolbar.setBackgroundColor(getResources().getColor(R.color.colorToolbar));
-            //releaseCamera();
-            blockingToolbar.setVisibility(View.GONE);
-            cameraPreview.setAspectRatio(aspectRatio);
-            //resetCameraPreviews();
-            //initCameraPreview(newMode);
-            //toolbar.setBackgroundColor(getResources().getColor(R.color.colorToolbarTransparent));
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
@@ -332,10 +308,6 @@ public class CameraActivity extends AppCompatActivity implements
             }, 300);
 
         } else if (newMode == MODE_PHOTO) {
-            //releaseCamera();
-            //resetCameraPreviews();
-            blockingToolbar.setAlpha(0f);
-            blockingToolbar.setVisibility(View.VISIBLE);
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
                     getResources().getColor(R.color.colorToolbarTransparent),
                     getResources().getColor(R.color.colorToolbar));
@@ -344,14 +316,6 @@ public class CameraActivity extends AppCompatActivity implements
                 @Override
                 public void onAnimationUpdate(ValueAnimator animator) {
                     toolbar.setBackgroundColor((int) animator.getAnimatedValue());
-                }
-            });
-            colorAnimation.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    cameraPreview.setAspectRatio(aspectRatio);
-                    blockingToolbar.setAlpha(1f);
-                    toolbar.setBackgroundColor(getResources().getColor(R.color.colorTransparent));
                 }
             });
             colorAnimation.start();

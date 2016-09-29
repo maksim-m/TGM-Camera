@@ -3,11 +3,8 @@ package me.maxdev.tgmcamera;
 import android.content.Context;
 import android.hardware.Camera;
 import android.util.Log;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.Window;
-import android.view.WindowManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,13 +25,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private SurfaceHolder surfaceHolder;
     private List<Camera.Size> supportedPreviewSizes;
     private Camera.Size previewSize;
-    private float aspectRatio;
     private List<Camera.Size> supportedPictureSizes;
 
-    public CameraPreview(Context context, Camera camera, CameraIdProvider cameraIdProvider, float aspectRatio) {
+    public CameraPreview(Context context, Camera camera, CameraIdProvider cameraIdProvider) {
         super(context);
         this.context = context;
-        this.aspectRatio = aspectRatio;
         this.camera = camera;
         this.cameraIdProvider = cameraIdProvider;
         this.surfaceHolder = getHolder();
@@ -46,11 +41,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
-    public void setAspectRatio(float aspectRatio) {
+    /*public void setAspectRatio(float aspectRatio) {
         Log.e("xxx", "new aspect ratio = " + aspectRatio);
         this.aspectRatio = aspectRatio;
         requestLayout();
-    }
+    }*/
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -121,11 +116,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        /*final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
-        final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);/*/
+        final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+        final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
 
-        int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
-        int width = (int) (height * aspectRatio);
+        /*int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
+        int width = (int) (height * aspectRatio);*/
 
         if (supportedPreviewSizes != null) {
             previewSize = getOptimalPreviewSize(width, height);

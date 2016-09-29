@@ -1,35 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/layout_root"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="0dp"
-    tools:context="me.maxdev.tgmcamera.CameraActivity">
+             xmlns:tools="http://schemas.android.com/tools"
+             android:id="@+id/layout_root"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:padding="0dp"
+             tools:context="me.maxdev.tgmcamera.CameraActivity">
 
-    <LinearLayout
+    <FrameLayout
+        android:id="@+id/layout_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal">
-
-        <FrameLayout
-            android:id="@+id/layout_preview"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:minWidth="100dp" />
-
-        <View
-            android:id="@+id/blocking_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/colorToolbar" />
-
-    </LinearLayout>
+        android:minWidth="100dp"/>
 
     <RelativeLayout
         android:id="@+id/toolbar"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:background="@color/colorToolbar"
         android:layout_gravity="right">
 
         <ImageView
@@ -37,26 +25,26 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
+            android:layout_below="@+id/button_shutter"
             android:layout_centerHorizontal="true"
             android:src="@drawable/btn_switch"
-            android:layout_below="@+id/button_shutter"
-            android:visibility="invisible" />
+            android:visibility="invisible"/>
 
         <me.maxdev.tgmcamera.widget.ShutterButton
             android:id="@+id/button_shutter"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:layout_centerInParent="true" />
+            android:layout_centerInParent="true"/>
 
         <ImageButton
             android:id="@+id/button_ok"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_above="@+id/button_shutter"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:layout_above="@+id/button_shutter"
-            android:src="@drawable/btn_done"
             android:background="@color/colorTransparent"
+            android:src="@drawable/btn_done"
             android:visibility="invisible"/>
 
         <ImageButton
@@ -64,11 +52,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
             android:layout_below="@+id/button_shutter"
-            android:src="@drawable/button_cancel"
+            android:layout_centerHorizontal="true"
             android:background="@color/colorTransparent"
-            android:visibility="invisible" />
+            android:src="@drawable/button_cancel"
+            android:visibility="invisible"/>
 
     </RelativeLayout>
 

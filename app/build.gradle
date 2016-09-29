@@ -12,7 +12,14 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
     buildTypes {
+        debug {
+            versionNameSuffix "-debug"
+            minifyEnabled false
+            testCoverageEnabled true
+        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -21,8 +28,9 @@ android {
 }
 
 ext {
-    supportLibraryVersion = "24.2.0"
+    supportLibraryVersion = "24.2.1"
     butterknifeVersion = "8.1.0"
+    jUnitVersion = "4.12"
 }
 
 dependencies {
@@ -33,5 +41,5 @@ dependencies {
     compile "com.jakewharton:butterknife:${butterknifeVersion}"
     apt "com.jakewharton:butterknife-compiler:${butterknifeVersion}"
 
-    testCompile 'junit:junit:4.12'
+    testCompile "junit:junit:${jUnitVersion}"
 }
