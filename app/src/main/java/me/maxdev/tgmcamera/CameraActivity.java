@@ -48,7 +48,7 @@ public class CameraActivity extends AppCompatActivity implements
     private static final int MODE_PHOTO = 0;
     private static final int MODE_VIDEO = 1;
 
-    private static final int SHORT_ANIMATION_DURATION = 400;
+    private static final int SHORT_ANIMATION_DURATION_IN_MILLIS = 300;
     private static VideoFileObserver videoFileObserver;
 
     @BindView(R.id.layout_root)
@@ -295,7 +295,7 @@ public class CameraActivity extends AppCompatActivity implements
                     ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
                             getResources().getColor(R.color.colorToolbar),
                             getResources().getColor(R.color.colorToolbarTransparent));
-                    colorAnimation.setDuration(SHORT_ANIMATION_DURATION); // milliseconds
+                    colorAnimation.setDuration(SHORT_ANIMATION_DURATION_IN_MILLIS);
                     colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                         @Override
                         public void onAnimationUpdate(ValueAnimator animator) {
@@ -311,7 +311,7 @@ public class CameraActivity extends AppCompatActivity implements
             ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
                     getResources().getColor(R.color.colorToolbarTransparent),
                     getResources().getColor(R.color.colorToolbar));
-            colorAnimation.setDuration(SHORT_ANIMATION_DURATION); // milliseconds
+            colorAnimation.setDuration(SHORT_ANIMATION_DURATION_IN_MILLIS);
             colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animator) {
@@ -446,7 +446,7 @@ public class CameraActivity extends AppCompatActivity implements
         final View v = view;
         v.animate()
                 .alpha(0f)
-                .setDuration(SHORT_ANIMATION_DURATION)
+                .setDuration(SHORT_ANIMATION_DURATION_IN_MILLIS)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
@@ -460,7 +460,7 @@ public class CameraActivity extends AppCompatActivity implements
         view.setVisibility(View.VISIBLE);
         view.animate()
                 .alpha(1f)
-                .setDuration(SHORT_ANIMATION_DURATION)
+                .setDuration(SHORT_ANIMATION_DURATION_IN_MILLIS)
                 .setListener(null);
 
     }
@@ -469,7 +469,7 @@ public class CameraActivity extends AppCompatActivity implements
         ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
                 getResources().getColor(R.color.colorToolbarTransparent),
                 getResources().getColor(R.color.colorTransparent));
-        colorAnimation.setDuration(SHORT_ANIMATION_DURATION); // milliseconds
+        colorAnimation.setDuration(SHORT_ANIMATION_DURATION_IN_MILLIS); // milliseconds
         colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animator) {
@@ -483,7 +483,7 @@ public class CameraActivity extends AppCompatActivity implements
         ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
                 getResources().getColor(R.color.colorTransparent),
                 getResources().getColor(R.color.colorToolbarTransparent));
-        colorAnimation.setDuration(SHORT_ANIMATION_DURATION); // milliseconds
+        colorAnimation.setDuration(SHORT_ANIMATION_DURATION_IN_MILLIS); // milliseconds
         colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animator) {

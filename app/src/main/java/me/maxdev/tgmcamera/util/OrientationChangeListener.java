@@ -6,9 +6,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.OrientationEventListener;
 
-/**
- * Created by Max on 29.04.2016.
- */
 public class OrientationChangeListener extends OrientationEventListener {
 
     public static final String BROADCAST_ORIENTATION_CHANGED = "OrientationChanged";

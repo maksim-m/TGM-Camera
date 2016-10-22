@@ -8,9 +8,6 @@ import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-/**
- * Created by Max on 06.05.2016.
- */
 public class VideoFileObserver extends FileObserver {
 
     public static final String BROADCAST_WRITE_FINISHED = "WriteFinished";

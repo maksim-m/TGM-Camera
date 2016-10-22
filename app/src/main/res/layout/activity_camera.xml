@@ -32,8 +32,9 @@
 
         <me.maxdev.tgmcamera.widget.ShutterButton
             android:id="@+id/button_shutter"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_margin="10dp"
             android:layout_centerInParent="true"/>
 
         <ImageButton

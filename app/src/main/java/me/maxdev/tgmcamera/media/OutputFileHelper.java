@@ -13,9 +13,6 @@ import java.util.Locale;
 
 import me.maxdev.tgmcamera.R;
 
-/**
- * Created by Max on 01.05.2016.
- */
 public class OutputFileHelper {
 
     public static final int MEDIA_TYPE_IMAGE = 1;

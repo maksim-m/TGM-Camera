@@ -15,9 +15,6 @@ import java.io.IOException;
 
 import me.maxdev.tgmcamera.util.OnCaptureFinishedListener;
 
-/**
- * Created by Max on 28.04.2016.
- */
 public class PictureCallback implements Camera.PictureCallback {
 
     private static final String LOG_TAG = "PictureCallback";

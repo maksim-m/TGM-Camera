@@ -7,9 +7,6 @@ import android.util.Log;
 
 import java.io.File;
 
-/**
- * Created by Max on 06.05.2016.
- */
 public class GalleryHelper {
 
     private static final String LOG_TAG = "GalleryHelper";

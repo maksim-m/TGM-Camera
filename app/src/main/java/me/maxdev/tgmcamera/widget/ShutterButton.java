@@ -12,9 +12,6 @@ import android.view.View;
 
 import me.maxdev.tgmcamera.R;
 
-/**
- * Created by Max on 29.04.2016.
- */
 public class ShutterButton extends View {
 
     private static final String LOG_TAG = "ShutterButton";

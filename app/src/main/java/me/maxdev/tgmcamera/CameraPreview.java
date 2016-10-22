@@ -11,9 +11,6 @@ import java.util.List;
 
 import me.maxdev.tgmcamera.util.OrientationChangeListener;
 
-/**
- * Created by Max on 28.04.2016.
- */
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String LOG_TAG = "CameraPreview";

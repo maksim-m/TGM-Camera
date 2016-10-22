@@ -8,9 +8,6 @@ import android.support.v7.app.AlertDialog;
 
 import me.maxdev.tgmcamera.R;
 
-/**
- * Created by Max on 02.05.2016.
- */
 public class PermissionsDeniedDialogFragment extends DialogFragment {
 
     public static final String TAG = "PermissionsDeniedDialogFragment";
